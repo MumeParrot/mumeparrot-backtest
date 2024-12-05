@@ -3,10 +3,64 @@ import math
 from typing import List, Dict
 
 from .const import StockRow, State
-from .utils import read_chart, read_base_chart, read_sahm, plot, moving_average
+from .utils import (
+    read_chart,
+    read_base_chart,
+    read_sahm,
+    plot,
+    moving_average,
+    plot_avg_price,
+)
 
 TERM = 40
 MARGIN = 0.1
+
+
+def test(ticker: str, N: int):
+    chart = read_chart(ticker, "", "")
+    base_chart = read_base_chart(ticker, "", "")
+
+    charts = [chart[i : i + N] for i in range(len(chart) - N)]
+    base_charts = [base_chart[i : i + N] for i in range(len(base_chart) - N)]
+
+    results = []
+    for c, bc in zip(charts, base_charts):
+        res = unit_test(c, bc)
+        results.append(res)
+
+    return results
+
+
+def unit_test(chart: List[StockRow], base_chart: List[StockRow]):
+    MARGIN = 0.1
+
+    base_start_price = base_chart[0].close_price
+
+    invested_seed = 0
+    stock_qty = 0
+    avg_price = 0
+
+    sold = False
+    for c, b in zip(chart, base_chart):
+        if stock_qty > 0 and c.close_price > avg_price * (1 + MARGIN):
+            base_end_price = b.close_price
+            sell_price = avg_price * (1 + MARGIN)
+            sold = True
+
+            break
+
+        if c.rsi < 60:
+            invested_seed += c.close_price
+            stock_qty += 1
+            avg_price = invested_seed / stock_qty
+
+        base_end_price = b.close_price
+        sell_price = c.close_price
+
+    base_ror = base_end_price / base_start_price - 1
+    ror = (sell_price * stock_qty) / invested_seed - 1
+
+    return (ror, base_ror, sold)
 
 
 def run(ticker: str, principal: float, start: str, end: str):
@@ -14,28 +68,38 @@ def run(ticker: str, principal: float, start: str, end: str):
     base_chart = read_base_chart(ticker, start, end)
     sahm = read_sahm()
 
+    # mume_v1_history = v1(chart, principal)
+
     mume_avg_history1 = mume_avg(
         chart,
         principal,
         sahm,
-        adjust_buy=True,
-        adjust_good=True,
+        adjust_buy=False,
+        adjust_good=False,
         adjust_sell=True,
-        adjust_margin=True,
+        adjust_margin=False,
+        adjust_onoff=False,
         consider_sahm=False,
     )
     mume_avg_history2 = mume_avg(
         chart,
         principal,
         sahm,
-        adjust_buy=True,
-        adjust_good=True,
+        adjust_buy=False,
+        adjust_good=False,
         adjust_sell=True,
-        adjust_margin=True,
-        consider_sahm=True,
+        adjust_margin=False,
+        adjust_onoff=True,
+        consider_sahm=False,
     )
 
     buy_history = just_buy(base_chart, principal)
+
+    avg1 = [s.stock_avg for s in mume_avg_history1]
+    avg2 = [s.stock_avg for s in mume_avg_history2]
+
+    print(len(avg1))
+    print(sum([a > b for a, b in zip(avg1, avg2)]))
 
     plot(
         ticker,
@@ -45,6 +109,8 @@ def run(ticker: str, principal: float, start: str, end: str):
             "mumeparrot-sahm": mume_avg_history2,
         },
     )
+
+    return mume_avg_history1, mume_avg_history2
 
 
 def just_buy(chart: List[StockRow], principal: float):
@@ -60,7 +126,7 @@ def just_buy(chart: List[StockRow], principal: float):
     stock_avg = 0
     remaining_seed = seed - invested_seed
 
-    for date, price, close_price in chart:
+    for date, price, close_price, _ in chart:
         stock_avg = invested_seed / stock_qty if stock_qty != 0 else 0
         stock_eval = stock_qty * close_price
         ror = (remaining_seed + stock_eval) / principal
@@ -96,7 +162,7 @@ def v1(chart: List[StockRow], principal: float):
     stock_avg = 0
     remaining_seed = seed
 
-    for date, price, close_price in chart:
+    for date, price, close_price, rsi in chart:
 
         dqty = seed // (TERM * price)
         if dqty < 1:
@@ -178,12 +244,12 @@ def mume_avg(
     adjust_margin=False,
     adjust_good=False,
     adjust_sell=False,
+    adjust_onoff=True,
     consider_sahm=False,
 ) -> List[State]:
     avg200_history = moving_average(chart, 200)
     avg100_history = moving_average(chart, 100)
     avg5_history = moving_average(chart, 5)
-    avg10_history = moving_average(chart, 10)
     avg3_history = moving_average(chart, 3)
     history = []
 
@@ -197,7 +263,7 @@ def mume_avg(
     stock_avg = 0
     remaining_seed = seed
 
-    onoff = False
+    onoff = True
     good = False
     happy = False
 
@@ -207,10 +273,8 @@ def mume_avg(
     cnt_all_used = 0
 
     total_days = 0
-    for date, price, close_price in chart:
+    for date, price, close_price, rsi in chart:
         term = TERM
-        margin = MARGIN
-
         max_margin = MARGIN
         if adjust_margin:
             max_margin = MARGIN + (remaining_seed / seed) * MARGIN / 2
@@ -223,13 +287,9 @@ def mume_avg(
         if len(prev_5_prices) > 5:
             prev_5_prices.pop(0)
 
-        if (
-            prev_5_prices[0] < avg100_history[date]
-            and price > avg100_history[date]
-        ):
-            happy = True
-        else:
-            happy = False
+        happy = (prev_5_prices[0] < avg100_history[date]) and (
+            price > avg100_history[date]
+        )
 
         if adjust_buy and happy:
             dqty *= 2
@@ -249,17 +309,17 @@ def mume_avg(
                     if price > avg5_history[date]:
                         onoff = True
 
-            elif price > avg5_history[date]:
+            elif rsi < 60:
                 onoff = True
 
         if adjust_good:
-            good = price > avg100_history[date] or price > avg3_history[date]
+            good = rsi < 80
         else:
             good = True
 
         if stock_avg != 0 and price > stock_avg:
             if close_price > price:
-                if (stock_avg * (1 + margin)) > close_price:
+                if (stock_avg * (1 + MARGIN)) > close_price:
                     dqty_high = dqty // 2
                     dcost_high = dqty_high * close_price
 
@@ -267,7 +327,7 @@ def mume_avg(
                 dqty_low = dqty // 2
                 dcost_low = dqty_low * close_price
 
-                if (stock_avg * (1 + margin)) > close_price:
+                if (stock_avg * (1 + MARGIN)) > close_price:
                     dqty_high = dqty - dqty_low
                     dcost_high = dqty_high * close_price
 
@@ -283,7 +343,7 @@ def mume_avg(
         if stock_qty > 0:
             if price > stock_avg * (1 + max_margin):
                 sell_all = True
-            elif price > stock_avg * (1 + margin):
+            elif price > stock_avg * (1 + MARGIN):
                 sell_half = True
 
                 if close_price > stock_avg * (1 + max_margin):
@@ -291,7 +351,7 @@ def mume_avg(
 
             elif close_price > stock_avg * (1 + max_margin):
                 sell_all_later = True
-            elif close_price > stock_avg * (1 + margin):
+            elif close_price > stock_avg * (1 + MARGIN):
                 sell_half_later = True
 
         make_profit = sell_all or sell_half or sell_all_later or sell_half_later
@@ -300,9 +360,9 @@ def mume_avg(
         if make_profit or all_seed_used:
             sell_price = price
             if sell_all_later:
-                sell_price = stock_avg * (1 + (margin + max_margin) / 2)
+                sell_price = stock_avg * (1 + (MARGIN + max_margin) / 2)
             elif sell_half_later:
-                sell_price = stock_avg * (1 + margin)
+                sell_price = stock_avg * (1 + MARGIN)
 
             if all_seed_used:
                 if adjust_sell:
@@ -326,8 +386,8 @@ def mume_avg(
             invested_seed -= sell_qty * stock_avg
             remaining_seed += sell_qty * sell_price
 
-            if stock_qty == 0:
-                onoff = False
+            if adjust_onoff:
+                onoff = not all_seed_used
 
             if make_profit:
                 cnt_make_profit += 1

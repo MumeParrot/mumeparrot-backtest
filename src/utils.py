@@ -17,21 +17,23 @@ TICKERS = {"TQQQ": "QQQ", "SOXL": "SOXX", "SPXL": "SPY"}
 
 def read_chart(ticker: str, start: str, end: str) -> List[StockRow]:
     ticker = ticker.upper()
-    if ticker not in TICKERS.keys():
-        raise Exception(f"'{ticker}' is not supported")
+    # if ticker not in TICKERS.keys():
+    #     raise Exception(f"'{ticker}' is not supported")
 
-    with open(f"charts/{ticker}-SIM.csv", "r") as fd:
+    with open(f"charts/{ticker}-SIM-RSI.csv", "r") as fd:
         reader = csv.reader(fd)
-        history = [StockRow(d, float(p), float(cp)) for d, p, cp in reader]
+        history = [
+            StockRow(d, float(p), float(cp), float(r)) for d, p, cp, r in reader
+        ]
 
     sidx = 0
     if start != INIT:
-        matching = [d.startswith(start) for d, _, _ in history]
+        matching = [d.startswith(start) for d, _, _, _ in history]
         sidx = matching.index(True)
 
     eidx = len(history)
     if end != FIN:
-        matching = [d.startswith(end) for d, _, _ in history]
+        matching = [d.startswith(end) for d, _, _, _ in history]
         eidx = len(matching) - list(reversed(matching)).index(True)
 
     return history[sidx:eidx]
@@ -47,18 +49,18 @@ def read_base_chart(ticker: str, start: str, end: str) -> List[StockRow]:
     with open(f"charts/{base_ticker}.csv", "r") as fd:
         reader = csv.reader(fd)
         history = [
-            StockRow(d, float(p), float(cp))
+            StockRow(d, float(p), float(cp), 0)
             for d, p, _, _, _, cp, _ in list(reader)[1:]
         ]
 
     sidx = 0
     if start != INIT:
-        matching = [d.startswith(start) for d, _, _ in history]
+        matching = [d.startswith(start) for d, _, _, _ in history]
         sidx = matching.index(True)
 
     eidx = len(history)
     if end != FIN:
-        matching = [d.startswith(end) for d, _, _ in history]
+        matching = [d.startswith(end) for d, _, _, _ in history]
         eidx = len(matching) - list(reversed(matching)).index(True)
 
     return history[sidx:eidx]
@@ -127,7 +129,7 @@ def moving_average(chart: List[StockRow], term: int) -> Dict[str, float]:
     avg_history = {}
 
     prices = []
-    for date, p, cp in chart:
+    for date, p, cp, _ in chart:
         avg_history[date] = sum(prices) / len(prices) if prices else p
 
         prices += [p]
@@ -148,6 +150,45 @@ def plot(ticker: str, histories: Dict[str, List[State]]):
         rors = [s.ror for s in h]
 
         ax.plot(rors, label=l)
+
+    xticks = []
+    xticklabels = []
+
+    last_year = ""
+    for i, d in enumerate(dates):
+        year, m = d.split("-")[0:2]
+
+        if year != last_year and m == "01":
+            xticks.append(i)
+            xticklabels.append(d[0:4])
+            last_year = year
+
+        # elif last_m == "01" and m == "07":
+        #     xticks.append(i)
+        #     xticklabels.append(d)
+        #     last_m = "07"
+
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels)
+
+    ax.set_title(ticker + " from " + dates[0][:4])
+    ax.legend()
+
+    ax.grid(axis="y")
+
+    plt.show()
+
+
+def plot_avg_price(ticker: str, histories: Dict[str, List[State]]):
+    dates = [s.date for s in list(histories.values())[0]]
+
+    fig = plt.figure(figsize=(20, 8))
+    ax = fig.add_subplot(111)
+
+    for l, h in histories.items():
+        avg_prices = [s.stock_avg for s in h]
+
+        ax.plot(avg_prices, label=l)
 
     xticks = []
     xticklabels = []

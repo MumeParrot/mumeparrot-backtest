@@ -26,6 +26,7 @@ class StockRow:
     date: str
     price: float
     close_price: float
+    rsi: float
 
     def __iter__(self):
         return iter(astuple(self))
@@ -54,3 +55,20 @@ class State:
 
     def __iter__(self):
         return iter(astuple(self))
+
+@dataclass
+class Result:
+    start: str
+    days: int
+    sold: bool
+    ror: float
+    base_ror: float
+
+
+@dataclass
+class Stat:
+    rate_of_better_sold: float
+    rate_of_sold: float
+    avg_days_of_sold: int
+    avg_ror_of_sold: float
+    avg_ror_of_not_sold: float
