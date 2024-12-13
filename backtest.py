@@ -6,15 +6,16 @@ import sys
 from threading import Thread
 
 from typing import Any, Type
-# from src.sim import run
 from src.run import test
+from src.configs import Config, best_configs
 
 arg_str = ""
 
 stop = [False]
 
-TICKERS = sorted([i[:-4].split('-')[0] for i in os.listdir('charts')
-                  if 'SIM-RSI' in i])
+# TICKERS = sorted([i[:-4].split('-')[0] for i in os.listdir('charts')
+#                   if 'SIM-RSI' in i])
+TICKERS = ['SOXL', 'TQQQ', 'SPXL', 'NAIL', 'TECL']
 
 def sigint_handler(sig, frame):
     print("stop = True")
@@ -83,20 +84,23 @@ def main():
         stop[0] = False
 
         ticker = get_arg("ticker", tpe=str, default='all')
-        term = get_arg("term", tpe=int, default=40)
-        seed = get_arg("seed", tpe=int, default=100000)
-        margin = get_arg("margin", tpe=float, default=0.05)
-        max_cycles = get_arg("max_cycles", tpe=int, default=2)
-        rsi_threshold = get_arg("rsi_threshold", tpe=int, default=80)
-        burst_threshold = get_arg("burst_threshold", tpe=int, default=40)
-        burst_rate = get_arg("burst_rate", tpe=float, default=1.5)
-        margin_window = get_arg("margin_window", tpe=float, default=0.1)
-        base_margin_lose = get_arg("base_margin_lose", tpe=float, default=0.05)
-        sahm_threshold = get_arg("sahm_threshold", tpe=float, default=1)
+        max_cycles = get_arg("max_cycles", tpe=int, default=1)
+        config = get_arg("config", tpe=str, default='best')
+        if config != 'best':
+            margin = get_arg("margin", tpe=float, default=0.05)
+            margin_lose = get_arg("margin_lose", tpe=float, default=0.05)
+            rsi_threshold = get_arg("rsi_threshold", tpe=int, default=80)
+            burst_threshold = get_arg("burst_threshold", tpe=int, default=40)
+            burst_rate = get_arg("burst_rate", tpe=float, default=1.5)
+            margin_window = get_arg("margin_window", tpe=float, default=0.1)
+            stoploss_threshold = get_arg("stoploss_threshold", tpe=float, default=0.4)
+            sahm_threshold = get_arg("sahm_threshold", tpe=float, default=1)
 
-        # principal = get_arg("principal", default=10000)
-        # start = get_arg("start", default="init")
-        # end = get_arg("end", default="fin")
+            config = Config(margin, margin_lose, rsi_threshold, burst_threshold, 
+                            burst_rate, margin_window, stoploss_threshold, sahm_threshold)
+        
+        else:
+            config = best_configs[ticker]
 
         if stop[0]:
             print("")
@@ -105,16 +109,11 @@ def main():
         print_args()
 
         if ticker != 'all':
-            test(ticker, term, seed, margin ,max_cycles, 
-                rsi_threshold, burst_threshold, burst_rate, margin_window,
-                base_margin_lose, sahm_threshold)
+            test(ticker, max_cycles, config)
 
         else:
             for ticker in TICKERS:
-                test(ticker, term, seed, margin , max_cycles, 
-                     rsi_threshold, burst_threshold, burst_rate, margin_window,
-                     base_margin_lose, sahm_threshold)
-
+                test(ticker, max_cycles, config)
 
 if __name__ == "__main__":
     main()

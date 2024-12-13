@@ -1,5 +1,4 @@
-from typing import List
-
+from typing import List, Dict
 from .const import StockRow, Result, Stat
 from .utils import (
     read_chart,
@@ -7,43 +6,27 @@ from .utils import (
     moving_average,
     read_sahm
 )
+from .configs import Config
+
+from datetime import datetime, timedelta
 
 MARKET_DAYS_PER_YEAR = 260
 
 TERM = 40
 SEED = 100000
-MARGIN = 0.05
-RSI_THRESHOLD = 80
-BURST_THRESHOLD = 40
-BURST_RATE = 1.5 # TODO
-MARGIN_WINDOW = 0.1
-LOSE_MARGIN = 0.1
-BASE_MARGIN_LOSE = 0.05
 
 AVG50_HISTORY = None
+U50_RATES = None
+
+CONFIG = None
 
 def test(ticker: str, 
-         term: int, 
-         seed: int, 
-         margin: float,
          max_cycles: int,
-         rsi_threshold: int,
-         burst_threshold: int,
-         burst_rate: float,
-         margin_window: float,
-         base_margin_lose: float,
-         sahm_threshold: float,
+         config: Config,
         ):
 
-    global TERM, SEED, MARGIN, RSI_THRESHOLD, BURST_THRESHOLD, BURST_RATE, MARGIN_WINDOW, BASE_MARGIN_LOSE
-    TERM = term
-    SEED = seed
-    MARGIN = margin
-    RSI_THRESHOLD = rsi_threshold
-    BURST_THRESHOLD = burst_threshold
-    BURST_RATE = burst_rate
-    MARGIN_WINDOW = margin_window
-    BASE_MARGIN_LOSE = base_margin_lose
+    global CONFIG
+    CONFIG = config
 
     chart = read_chart(ticker, "", "")
     no_base_chart = False
@@ -55,8 +38,10 @@ def test(ticker: str,
 
     global AVG50_HISTORY
     AVG50_HISTORY = moving_average(chart, 50)
+    sahm = read_sahm()
 
-    u50_rates = {i: [] for i in range(11)}
+    global U50_RATES
+    U50_RATES = compute_u50_rates(chart)
 
     # Split all-time chart to a number of fractions
     charts = [chart[i : i + TERM] 
@@ -64,44 +49,30 @@ def test(ticker: str,
     base_charts = [base_chart[i : i + TERM] 
                    for i in range(len(base_chart) - TERM)]
 
-    sahm = read_sahm()
-
     _charts = charts
     _base_charts = base_charts
 
-    # r_s_per_cycle = []
-    # avg_ror_for_s_per_cycle = []
-    # avg_days_for_s_per_cycle = []
-    # avg_loss_for_ns_per_cycle = []
-
     stats: List[Stat] = []
+    results: Dict[int, List[Result]] = {}
 
     print(f"======== Result for {ticker} ========")
 
     for c in range(max_cycles):
-        results: List[Result] = []
+        results[c] = []
 
         # Simulate Mumae for all fractions of chart
         for chart, base_chart in zip(_charts, _base_charts):
-            if sahm_threshold != 0 and sahm[chart[0].date] > sahm_threshold:
+            if (CONFIG.sahm_threshold != 0 
+                and sahm[chart[0].date] > CONFIG.sahm_threshold):
                 continue
 
-            u50_rate = get_ratio(chart,
-                                 lambda s: s.close_price < AVG50_HISTORY[s.date])
             res = simulate(chart, base_chart, c, no_base_chart)
-
-            u50_rates[int(u50_rate * 10)].append(res)
-            results.append(res)
-
-        # for i in range(0, 11):
-        #     n = len(u50_rates[i])
-        #     n_ns = len([r for r in u50_rates[i] if not r.sold])
-        #     print(f'[{i * 10}%-{min(i, 9) * 10 + 10}%) {n_ns/n * 100:.2f}%')
+            results[c].append(res)
 
         # Rebuild fractions by extending the fractions that have failed
         _charts = []
         _base_charts = []
-        for res in results:
+        for res in results[c]:
             if not res.sold:
                 idx = [c[0].date for c in charts].index(res.start)
 
@@ -119,7 +90,7 @@ def test(ticker: str,
                 _charts.append(extended_chart)
                 _base_charts.append(extended_base_chart)
 
-        total = len(results)
+        total = len(results[c])
 
         # Compute the number of
         #  1) better than base & sold
@@ -127,19 +98,19 @@ def test(ticker: str,
         #  3) better than base & not sold
         #  4) worse than base & not sold
 
-        btb_s = len([r for r in results if r.sold and r.ror > r.base_ror])
-        wtb_s = len([r for r in results if r.sold and r.ror <= r.base_ror])
-        btb_ns = len([r for r in results if not r.sold and r.ror > r.base_ror])
-        wtb_ns = len([r for r in results if not r.sold and r.ror <= r.base_ror])
+        btb_s = len([r for r in results[c] if r.sold and r.ror > r.base_ror])
+        wtb_s = len([r for r in results[c] if r.sold and r.ror <= r.base_ror])
+        btb_ns = len([r for r in results[c] if not r.sold and r.ror > r.base_ror])
+        wtb_ns = len([r for r in results[c] if not r.sold and r.ror <= r.base_ror])
 
         rate_of_better_sold = btb_s / total
         rate_of_sold = (btb_s + wtb_s) / total
         
-        avg_days_of_sold = sum([r.days for r in results if r.sold]) / (btb_s + wtb_s)
-        avg_ror_of_sold = sum([r.ror for r in results if r.sold]) / (btb_s + wtb_s)
+        avg_days_of_sold = sum([r.days for r in results[c] if r.sold]) / (btb_s + wtb_s)
+        avg_ror_of_sold = sum([r.ror for r in results[c] if r.sold]) / (btb_s + wtb_s)
 
         if btb_ns + wtb_ns > 0:
-            avg_ror_of_not_sold = sum([r.ror for r in results if not r.sold]) / (btb_ns + wtb_ns)
+            avg_ror_of_not_sold = sum([r.ror for r in results[c] if not r.sold]) / (btb_ns + wtb_ns)
         else:
             avg_ror_of_not_sold = 0
 
@@ -158,54 +129,11 @@ def test(ticker: str,
  avg_days_of_sold:    {avg_days_of_sold:.0f}\tavg_ror_of_sold: {avg_ror_of_sold * 100:.2f}%"""
               + (f"\n avg_ror_of_not_sold: {avg_ror_of_not_sold * 100:.2f}%" if c == max_cycles - 1 else ""))
 
-        # results_per_year = {}
-        # for res in results:
-        #     year = res.start.split('-')[0]
-        #     results_per_year[year] = results_per_year.get(year, []) + [res]
+    fail_rate = compute_fail_rate(stats, max_cycles)
+    avg_ror_per_year = compute_avg_ror(results, max_cycles)
 
-        # for year, rs in results_per_year.items():
-        #     n = len(rs)
-        #     n_ns = len([r for r in rs if not r.sold])
-        #     print(f'[{year}] {n_ns / n * 100:.2f}%')
-
-        # rs = results_per_year['2021']
-        # for r in rs:
-        #     if not r.sold:
-        #         print(r.start)
-            
-
-    avg_ror_per_year = 0
-    remaining_days_for_cycle = MARKET_DAYS_PER_YEAR
-    for c in range(max_cycles):
-        rate_of_sold = stats[c].rate_of_sold
-        avg_days_of_sold = stats[c].avg_days_of_sold
-        avg_ror_of_sold = stats[c].avg_ror_of_sold
-
-        avg_days_of_not_sold = 0
-        prev_rate_of_not_sold = 1
-        for s in stats[c + 1:]:
-            avg_days_of_not_sold += (prev_rate_of_not_sold * 
-                                     s.avg_days_of_sold * s.rate_of_sold)
-            prev_rate_of_not_sold = prev_rate_of_not_sold * (1 - s.rate_of_sold)
-
-        # If not sold at last cycle, then just assume selling all stocks at last day
-        avg_days_of_not_sold += prev_rate_of_not_sold * (max_cycles * TERM)
-
-        sold_days_in_cycle = (remaining_days_for_cycle * avg_days_of_sold * rate_of_sold /
-                             (avg_days_of_sold * rate_of_sold + avg_days_of_not_sold * (1 - rate_of_sold)))
-
-        avg_ror_per_year += sold_days_in_cycle * (avg_ror_of_sold / avg_days_of_sold)
-
-        remaining_days_for_cycle -= sold_days_in_cycle
-        if c == max_cycles - 1:
-            avg_ror_per_year += remaining_days_for_cycle * (avg_ror_of_not_sold / avg_days_of_not_sold)
-
-    fail_rate = 1
-    for s in stats:
-        fail_rate *= (1 - s.rate_of_sold)
     print(f'Fail rate: {fail_rate * 100:.2f}%')
     print(f'Average RoR per year: {avg_ror_per_year * 100:.2f}%')
-
 
 def simulate(chart: List[StockRow], base_chart: List[StockRow],
              cycle: int, no_base_chart=False) -> Result:
@@ -221,14 +149,19 @@ def simulate(chart: List[StockRow], base_chart: List[StockRow],
     days = 0
     exhaust_cnt = 0
 
-    u50_cnt = 0
-    u50_rate = 0
+    decline_score = 0
+
+    stop_loss = False
 
     for c, b in zip(chart, base_chart):
-        base_margin = (MARGIN - BASE_MARGIN_LOSE * max(u50_rate - 0.5, 0) / 0.5 
-                       if days > 10 else MARGIN)
-        margin_window = MARGIN_WINDOW * (remaining_seed / SEED)
-        margin = base_margin + margin_window
+        u50_rate = U50_RATES[c.date]
+
+        margin = CONFIG.margin 
+        margin_lose = CONFIG.margin_lose * max(u50_rate - 0.5, 0) / 0.5
+        margin -= margin_lose
+
+        margin_window = CONFIG.margin_window * (remaining_seed / SEED)
+        margin += margin_window
 
         if stock_qty > 0 and c.close_price > avg_price * (1 + margin):
             base_end_price = b.close_price
@@ -239,11 +172,19 @@ def simulate(chart: List[StockRow], base_chart: List[StockRow],
 
         dqty = (int(daily_seed / c.close_price) if remaining_seed > daily_seed
                 else int(remaining_seed / c.close_price))
-        burst_threshold = BURST_THRESHOLD * (0.2 + 0.8 * (1 - u50_rate))
-        if remaining_seed > BURST_RATE * daily_seed and c.rsi < burst_threshold:
-            dqty *= BURST_RATE
+        burst_threshold = CONFIG.burst_threshold * (1 - 0.8 * u50_rate)
 
-        rsi_threshold = RSI_THRESHOLD * (1 - u50_rate * (0.2 if exhaust_cnt == 0 else 0.6))
+        if (remaining_seed > CONFIG.burst_rate * daily_seed 
+            and c.rsi < burst_threshold):
+            dqty *= CONFIG.burst_rate
+
+        rsi_threshold = CONFIG.rsi_threshold
+        if exhaust_cnt == 0:
+            rsi_threshold -= 0.2 * u50_rate
+        else:
+            rsi_threshold -= 0.6 * u50_rate
+
+
         if dqty > 0 and c.rsi <= rsi_threshold:
             invested_seed += dqty * c.close_price
             remaining_seed -= dqty * c.close_price
@@ -255,9 +196,7 @@ def simulate(chart: List[StockRow], base_chart: List[StockRow],
             if cycle > exhaust_cnt:
                 exhaust_cnt += 1
 
-                # sell_qty = stock_qty // 4
                 sell_qty = max(stock_qty // 4, int(stock_qty * u50_rate))
-
                 invested_seed -= sell_qty * avg_price
                 remaining_seed += sell_qty * c.close_price
             
@@ -274,8 +213,29 @@ def simulate(chart: List[StockRow], base_chart: List[StockRow],
 
         days += 1
 
-        u50_cnt += int(c.close_price < AVG50_HISTORY[c.date])
-        u50_rate = u50_cnt / days
+        if (invested_seed / SEED) >= 0.4:
+            decline_score *= days - 1
+            decline_score += int(c.close_price <= avg_price)
+            decline_score /= days
+
+        # for r in decline_scores.keys():
+        #     s = decline_scores[r] * (days - 1)
+        #     if (invested_seed / SEED) < r:
+        #         s += int(c.close_price > avg_price)
+        #     else:
+        #         s += int(c.close_price <= avg_price)
+        #     decline_scores[r] = s / days
+
+        if (CONFIG.stoploss_threshold != 0 and not stop_loss
+            and decline_score > CONFIG.stoploss_threshold):
+            sell_qty = stock_qty // 2
+
+            invested_seed -= sell_qty * avg_price
+            remaining_seed += sell_qty * c.close_price
+            
+            stock_qty -= sell_qty
+
+            stop_loss = True
 
     base_invested_seed = SEED * min(days, TERM) / TERM
     base_remaining_seed = SEED - base_invested_seed
@@ -287,10 +247,99 @@ def simulate(chart: List[StockRow], base_chart: List[StockRow],
     if no_base_chart:
         base_ror = ror
 
-    return Result(chart[0].date, days, sold, ror, base_ror)
+    return Result(chart[0].date, days, sold, ror, base_ror, u50_rate)
+
+def compute_u50_rates(chart: List[StockRow]):
+    u50_rates = {}
+    
+    u50_counters = []
+    for c in chart:
+        u50_counters.append(int(c.close_price < AVG50_HISTORY[c.date]))
+        if len(u50_counters) > TERM:
+            u50_counters.pop(0)
+
+        u50_rates[c.date] = sum(u50_counters) / len(u50_counters)
+
+    return u50_rates
+
+def compute_avg_ror(results: Dict[int, List[Result]], max_cycles: int):
+    tot_ror = 0
+    tot_days = 0
+
+    for c in range(max_cycles - 1):
+        tot_ror += sum([r.ror for r in results[c] if r.sold])
+        tot_days += sum([r.days for r in results[c] if r.sold])
+
+    tot_ror += sum([r.ror for r in results[max_cycles - 1]]) 
+    tot_days += sum([r.days if r.sold else max_cycles * TERM for r in results[max_cycles - 1]])
+
+    return tot_ror / tot_days * MARKET_DAYS_PER_YEAR
+    
+# def compute_average_ror(stats: List[Stat], max_cycles: int) -> float:
+#     avg_ror_per_year = 0
+#     remaining_days_for_cycle = MARKET_DAYS_PER_YEAR
+
+#     for c in range(max_cycles):
+#         rate_of_sold = stats[c].rate_of_sold
+#         rate_of_not_sold = 1 - rate_of_sold
+#         avg_days_of_sold = stats[c].avg_days_of_sold
+#         avg_ror_of_sold = stats[c].avg_ror_of_sold
+#         avg_ror_of_not_sold = stats[c].avg_ror_of_not_sold
+
+#         # Estimate avg days required if not sold
+#         avg_days_of_not_sold = 0
+#         prev_rate_of_not_sold = 1
+#         for s in stats[c + 1:]:
+#             avg_days_of_not_sold += (prev_rate_of_not_sold *
+#                                      s.avg_days_of_sold * s.rate_of_sold)
+#             prev_rate_of_not_sold = prev_rate_of_not_sold * (1 - s.rate_of_sold)
+
+
+#         # If not sold at last cycle, then just assume selling all stocks at last day
+#         avg_days_of_not_sold += prev_rate_of_not_sold * (max_cycles * TERM)
+
+#         sold_days_in_cycle = remaining_days_for_cycle * (
+#             (avg_days_of_sold * rate_of_sold) / (avg_days_of_sold * rate_of_sold + avg_days_of_not_sold * rate_of_not_sold)
+#         )
+#         avg_ror_per_year += sold_days_in_cycle * (avg_ror_of_sold / avg_days_of_sold)
+        
+#         remaining_days_for_cycle -= sold_days_in_cycle
+#         if c == max_cycles - 1:
+#             avg_ror_per_year += remaining_days_for_cycle * (avg_ror_of_not_sold / avg_days_of_not_sold)
+
+#     return avg_ror_per_year
+
+def compute_fail_rate(stats: List[Stat], max_cycles: int) -> float:
+    fail_rate = 1
+
+    for s in stats:
+        fail_rate *= (1 - s.rate_of_sold)
+
+    return fail_rate
 
 def get_ratio(chart: List[StockRow], filter):
     tot = len(chart)
     cnt = len([c for c in chart if filter(c)])
 
     return cnt / tot
+
+# def get_max_ratio(chart: List[StockRow]):
+
+#     max_ratio = 0
+#     max_res = 0
+
+#     for ratio in [1, 0.75, 0.5, 0.25, 0]:
+#         pivot = int(len(chart) * ratio)
+
+#         res = 0
+#         for i, c in enumerate(chart):
+#             if i <= pivot:
+#                 res += int(c.close_price >= AVG50_HISTORY[c.date])
+#             else:
+#                 res += int(c.close_price < AVG50_HISTORY[c.date])
+
+#         if res > max_res:
+#             max_res = res
+#             max_ratio = ratio
+
+#     return max_ratio

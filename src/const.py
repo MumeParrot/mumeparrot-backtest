@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from dataclasses import dataclass, astuple
 
 EXTREME_FEAR = 25
@@ -63,6 +63,7 @@ class Result:
     sold: bool
     ror: float
     base_ror: float
+    u50_rate: float
 
 
 @dataclass

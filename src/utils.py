@@ -8,11 +8,12 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from .const import StockRow, State
 
-matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
 
 INIT = "init"
 FIN = "fin"
-TICKERS = {"TQQQ": "QQQ", "SOXL": "SOXX", "SPXL": "SPY"}
+TICKERS = {"TQQQ": "QQQ", "SOXL": "SOXX", "SPXL": "SPY", 
+           "NAIL": "DJUSHB", "TECL": "XLK"}
 
 
 def read_chart(ticker: str, start: str, end: str) -> List[StockRow]:
@@ -47,11 +48,17 @@ def read_base_chart(ticker: str, start: str, end: str) -> List[StockRow]:
     base_ticker = TICKERS[ticker]
 
     with open(f"charts/{base_ticker}.csv", "r") as fd:
-        reader = csv.reader(fd)
-        history = [
-            StockRow(d, float(p), float(cp), 0)
-            for d, p, _, _, _, cp, _ in list(reader)[1:]
-        ]
+        data = list(csv.reader(fd))
+        if len(data[0]) > 3:
+            history = [
+                StockRow(d, float(p), float(cp), 0)
+                for d, p, _, _, _, cp, _ in data[1:]
+            ]
+        else:
+            history = [
+                StockRow(d, float(p), float(cp), 0)
+                for d, p, cp in data[1:]
+            ]
 
     sidx = 0
     if start != INIT:
