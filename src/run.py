@@ -179,11 +179,10 @@ def simulate(chart: List[StockRow], base_chart: List[StockRow],
             dqty *= CONFIG.burst_rate
 
         rsi_threshold = CONFIG.rsi_threshold
-        if exhaust_cnt == 0:
-            rsi_threshold -= 0.2 * u50_rate
-        else:
-            rsi_threshold -= 0.6 * u50_rate
-
+        # if exhaust_cnt == 0:
+        #     rsi_threshold -= rsi_threshold * 0.2 * u50_rate
+        # else:
+        #     rsi_threshold -= rsi_threshold * 0.6 * u50_rate
 
         if dqty > 0 and c.rsi <= rsi_threshold:
             invested_seed += dqty * c.close_price
@@ -213,18 +212,12 @@ def simulate(chart: List[StockRow], base_chart: List[StockRow],
 
         days += 1
 
+        decline_score *= days - 1
         if (invested_seed / SEED) >= 0.4:
-            decline_score *= days - 1
             decline_score += int(c.close_price <= avg_price)
-            decline_score /= days
-
-        # for r in decline_scores.keys():
-        #     s = decline_scores[r] * (days - 1)
-        #     if (invested_seed / SEED) < r:
-        #         s += int(c.close_price > avg_price)
-        #     else:
-        #         s += int(c.close_price <= avg_price)
-        #     decline_scores[r] = s / days
+        else:
+            decline_score += int(c.close_price > avg_price)
+        decline_score /= days
 
         if (CONFIG.stoploss_threshold != 0 and not stop_loss
             and decline_score > CONFIG.stoploss_threshold):
@@ -274,40 +267,6 @@ def compute_avg_ror(results: Dict[int, List[Result]], max_cycles: int):
     tot_days += sum([r.days if r.sold else max_cycles * TERM for r in results[max_cycles - 1]])
 
     return tot_ror / tot_days * MARKET_DAYS_PER_YEAR
-    
-# def compute_average_ror(stats: List[Stat], max_cycles: int) -> float:
-#     avg_ror_per_year = 0
-#     remaining_days_for_cycle = MARKET_DAYS_PER_YEAR
-
-#     for c in range(max_cycles):
-#         rate_of_sold = stats[c].rate_of_sold
-#         rate_of_not_sold = 1 - rate_of_sold
-#         avg_days_of_sold = stats[c].avg_days_of_sold
-#         avg_ror_of_sold = stats[c].avg_ror_of_sold
-#         avg_ror_of_not_sold = stats[c].avg_ror_of_not_sold
-
-#         # Estimate avg days required if not sold
-#         avg_days_of_not_sold = 0
-#         prev_rate_of_not_sold = 1
-#         for s in stats[c + 1:]:
-#             avg_days_of_not_sold += (prev_rate_of_not_sold *
-#                                      s.avg_days_of_sold * s.rate_of_sold)
-#             prev_rate_of_not_sold = prev_rate_of_not_sold * (1 - s.rate_of_sold)
-
-
-#         # If not sold at last cycle, then just assume selling all stocks at last day
-#         avg_days_of_not_sold += prev_rate_of_not_sold * (max_cycles * TERM)
-
-#         sold_days_in_cycle = remaining_days_for_cycle * (
-#             (avg_days_of_sold * rate_of_sold) / (avg_days_of_sold * rate_of_sold + avg_days_of_not_sold * rate_of_not_sold)
-#         )
-#         avg_ror_per_year += sold_days_in_cycle * (avg_ror_of_sold / avg_days_of_sold)
-        
-#         remaining_days_for_cycle -= sold_days_in_cycle
-#         if c == max_cycles - 1:
-#             avg_ror_per_year += remaining_days_for_cycle * (avg_ror_of_not_sold / avg_days_of_not_sold)
-
-#     return avg_ror_per_year
 
 def compute_fail_rate(stats: List[Stat], max_cycles: int) -> float:
     fail_rate = 1
@@ -322,24 +281,3 @@ def get_ratio(chart: List[StockRow], filter):
     cnt = len([c for c in chart if filter(c)])
 
     return cnt / tot
-
-# def get_max_ratio(chart: List[StockRow]):
-
-#     max_ratio = 0
-#     max_res = 0
-
-#     for ratio in [1, 0.75, 0.5, 0.25, 0]:
-#         pivot = int(len(chart) * ratio)
-
-#         res = 0
-#         for i, c in enumerate(chart):
-#             if i <= pivot:
-#                 res += int(c.close_price >= AVG50_HISTORY[c.date])
-#             else:
-#                 res += int(c.close_price < AVG50_HISTORY[c.date])
-
-#         if res > max_res:
-#             max_res = res
-#             max_ratio = ratio
-
-#     return max_ratio
