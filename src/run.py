@@ -1,10 +1,13 @@
+import os
+
 from typing import List, Dict
 from .const import StockRow, Result, Stat
 from .utils import (
     read_chart,
     read_base_chart,
     moving_average,
-    read_sahm
+    read_sahm,
+    plot_with_rsi
 )
 from .configs import Config
 
@@ -20,18 +23,31 @@ U50_RATES = None
 
 CONFIG = None
 
+def plot_graph(ticker: str):
+    start = os.environ.get('START', '')
+    end = os.environ.get('END', '')
+    verbose = os.environ.get('VERBOSE', 0)
+
+    chart = read_chart(ticker, start, end)
+    plot_with_rsi(ticker, chart, 80, 40)
+   
+
 def test(ticker: str, 
          max_cycles: int,
          config: Config,
         ):
 
+    start = os.environ.get('START', '')
+    end = os.environ.get('END', '')
+    verbose = os.environ.get('VERBOSE', 0)
+
     global CONFIG
     CONFIG = config
 
-    chart = read_chart(ticker, "", "")
+    chart = read_chart(ticker, start, end)
     no_base_chart = False
     try:
-        base_chart = read_base_chart(ticker, "", "")
+        base_chart = read_base_chart(ticker, start, end)
     except:
         base_chart = chart
         no_base_chart = True
@@ -103,11 +119,11 @@ def test(ticker: str,
         btb_ns = len([r for r in results[c] if not r.sold and r.ror > r.base_ror])
         wtb_ns = len([r for r in results[c] if not r.sold and r.ror <= r.base_ror])
 
-        rate_of_better_sold = btb_s / total
-        rate_of_sold = (btb_s + wtb_s) / total
+        rate_of_better_sold = btb_s / total if total != 0 else 0
+        rate_of_sold = (btb_s + wtb_s) / total if total != 0 else 0
         
-        avg_days_of_sold = sum([r.days for r in results[c] if r.sold]) / (btb_s + wtb_s)
-        avg_ror_of_sold = sum([r.ror for r in results[c] if r.sold]) / (btb_s + wtb_s)
+        avg_days_of_sold = sum([r.days for r in results[c] if r.sold]) / (btb_s + wtb_s) if btb_s + wtb_s > 0 else 0
+        avg_ror_of_sold = sum([r.ror for r in results[c] if r.sold]) / (btb_s + wtb_s) if btb_s + wtb_s > 0 else 0
 
         if btb_ns + wtb_ns > 0:
             avg_ror_of_not_sold = sum([r.ror for r in results[c] if not r.sold]) / (btb_ns + wtb_ns)
@@ -124,16 +140,19 @@ def test(ticker: str,
 
         stats.append(stat)
 
-        print(f"""[Cycle {c}]
- rate_of_better_sold: {rate_of_better_sold * 100:.2f}%\trate_of_sold:    {rate_of_sold * 100:.2f}%
- avg_days_of_sold:    {avg_days_of_sold:.0f}\tavg_ror_of_sold: {avg_ror_of_sold * 100:.2f}%"""
-              + (f"\n avg_ror_of_not_sold: {avg_ror_of_not_sold * 100:.2f}%" if c == max_cycles - 1 else ""))
+        if verbose:
+           print(f"""[Cycle {c}]
+rate_of_better_sold: {rate_of_better_sold * 100:.2f}%\trate_of_sold:    {rate_of_sold * 100:.2f}%
+avg_days_of_sold:    {avg_days_of_sold:.0f}\tavg_ror_of_sold: {avg_ror_of_sold * 100:.2f}%"""
+                 + (f"\n avg_ror_of_not_sold: {avg_ror_of_not_sold * 100:.2f}%" if c == max_cycles - 1 else ""))
 
     fail_rate = compute_fail_rate(stats, max_cycles)
     avg_ror_per_year = compute_avg_ror(results, max_cycles)
 
     print(f'Fail rate: {fail_rate * 100:.2f}%')
     print(f'Average RoR per year: {avg_ror_per_year * 100:.2f}%')
+
+    return results
 
 def simulate(chart: List[StockRow], base_chart: List[StockRow],
              cycle: int, no_base_chart=False) -> Result:
@@ -179,10 +198,6 @@ def simulate(chart: List[StockRow], base_chart: List[StockRow],
             dqty *= CONFIG.burst_rate
 
         rsi_threshold = CONFIG.rsi_threshold
-        # if exhaust_cnt == 0:
-        #     rsi_threshold -= rsi_threshold * 0.2 * u50_rate
-        # else:
-        #     rsi_threshold -= rsi_threshold * 0.6 * u50_rate
 
         if dqty > 0 and c.rsi <= rsi_threshold:
             invested_seed += dqty * c.close_price
@@ -212,23 +227,23 @@ def simulate(chart: List[StockRow], base_chart: List[StockRow],
 
         days += 1
 
-        decline_score *= days - 1
-        if (invested_seed / SEED) >= 0.4:
-            decline_score += int(c.close_price <= avg_price)
-        else:
-            decline_score += int(c.close_price > avg_price)
-        decline_score /= days
+        # decline_score *= days - 1
+        # if (invested_seed / SEED) >= 0.4:
+        #     decline_score += int(c.close_price <= avg_price)
+        # else:
+        #     decline_score += int(c.close_price > avg_price)
+        # decline_score /= days
 
-        if (CONFIG.stoploss_threshold != 0 and not stop_loss
-            and decline_score > CONFIG.stoploss_threshold):
-            sell_qty = stock_qty // 2
+        # if (CONFIG.stoploss_threshold != 0 and not stop_loss
+        #     and decline_score > CONFIG.stoploss_threshold):
+        #     sell_qty = stock_qty // 2
 
-            invested_seed -= sell_qty * avg_price
-            remaining_seed += sell_qty * c.close_price
+        #     invested_seed -= sell_qty * avg_price
+        #     remaining_seed += sell_qty * c.close_price
             
-            stock_qty -= sell_qty
+        #     stock_qty -= sell_qty
 
-            stop_loss = True
+        #     stop_loss = True
 
     base_invested_seed = SEED * min(days, TERM) / TERM
     base_remaining_seed = SEED - base_invested_seed

@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from .const import StockRow, State
 
-# matplotlib.use("TkAgg")
+matplotlib.use("TkAgg")
 
 INIT = "init"
 FIN = "fin"
@@ -182,6 +182,42 @@ def plot(ticker: str, histories: Dict[str, List[State]]):
     ax.legend()
 
     ax.grid(axis="y")
+
+    plt.show()
+
+def plot_with_rsi(ticker: str, chart: List[StockRow], 
+                  threshold: int, burst_threshold: int):
+    dates = [s.date for s in list(chart)]
+
+    fig = plt.figure(figsize=(20, 8))
+    ax = fig.add_subplot(111)
+
+    prices = [s.price for s in chart]
+    rsis = [s.rsi for s in chart]
+    
+    ax.plot(prices)
+    ax.plot(rsis)
+
+    xticks = []
+    xticklabels = []
+
+    last_year = ''
+    for i, d in enumerate(dates):
+        y, m = d.split('-')[0:2]
+        
+        if y != last_year and m == '01':
+            xticks.append(i)
+            xticklabels.append(d[0:4])
+            last_year = y
+
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels)
+
+    ax.axhline(y=threshold, color='g')
+    ax.axhline(y=burst_threshold, color='r')
+
+    ax.set_title(ticker + ' from ' + dates[0][:4])
+    ax.grid(axis='y')
 
     plt.show()
 
