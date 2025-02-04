@@ -142,6 +142,12 @@ def fetch(ticker: str) -> pd.DataFrame:
 
     gc.del_spreadsheet(file.id)
 
+    # XRT (base of RETL) has strange row, just remove it
+    if ticker == "XRT":
+        tmp = df.iloc[2319]
+        df.iloc[2319] = df.iloc[2318]
+        df.iloc[2319]["Date"] = tmp["Date"]
+
     return df
 
 
