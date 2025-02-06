@@ -1,36 +1,27 @@
 #!/bin/env python3
 
 import os
-import signal
+import copy
 import sys
-from threading import Thread
 
 from typing import Any, Type
-from src.run import test, plot_graph
-from src.configs import Config, best_configs
+from dataclasses import asdict
+from src.run import test
+from src.utils import TICKERS, plot_graph
+from src.configs import Config, best_configs, print_config
 
-arg_str = ""
+MAX_CYCLES = 2
 
 stop = [False]
 
-# TICKERS = sorted([i[:-4].split('-')[0] for i in os.listdir('charts')
-#                   if 'SIM-RSI' in i])
-TICKERS = ['SOXL', 'TQQQ', 'SPXL', 'NAIL', 'TECL', 'WEBL', 'RETL']
 
 def sigint_handler(sig, frame):
     print("stop = True")
     stop[0] = True
 
 
-def restart(sig, frame):
-    print("Restart")
-
-
 def get_arg(name: str, default: Any = None, tpe: Type = None) -> Any:
-    global arg_str
-
-    assert default is not None or tpe is not None
-
+    # assert default is not None or tpe is not None
     if stop[0]:
         return
 
@@ -45,7 +36,6 @@ def get_arg(name: str, default: Any = None, tpe: Type = None) -> Any:
     try:
         arg = input()
     except KeyboardInterrupt:
-        arg_str = ""
         stop[0] = True
         return
 
@@ -56,74 +46,71 @@ def get_arg(name: str, default: Any = None, tpe: Type = None) -> Any:
             else:
                 var = default
         else:
-            var = tpe(arg or default) if default is not None else tpe(arg)
+            var = (
+                tpe(arg or default)
+                if default is not None
+                else tpe(arg) if arg else None
+            )
     except TypeError as e:
         print(f"Invalid argument '{arg}' for {name}")
         sys.exit(0)
 
-    arg_str += f"{name + ':':<20}{str(var).upper()}\n"
-
     return var
 
 
-def print_args():
-    global arg_str
-    print(
-        f"""
-===========================================================
-{arg_str}
-===========================================================
-"""
-    )
-
-    arg_str = ""
-
-
 def main():
+    start = os.environ.get("START", "")
+    end = os.environ.get("END", "")
+    verbose = os.environ.get("VERBOSE", 0)
+
     while True:
         stop[0] = False
 
         plot = get_arg("plot", tpe=bool, default=False)
-        ticker = get_arg("ticker", tpe=str, default='all')
-        config = get_arg("config", tpe=str, default='best')
+        ticker = get_arg("ticker", tpe=str, default="all")
+        config = get_arg("config", tpe=str, default="best")
 
-        if plot:
-            plot_graph(ticker)
+        if stop[0] is True:
+            print("")
             continue
 
-        if config != 'best':
-            margin = get_arg("margin", tpe=float, default=0.1)
-            margin_lose = get_arg("margin_lose", tpe=float, default=0)
-            rsi_threshold = get_arg("rsi_threshold", tpe=int, default=80)
-            burst_threshold = get_arg("burst_threshold", tpe=int, default=40)
-            burst_rate = get_arg("burst_rate", tpe=float, default=1)
-            margin_window = get_arg("margin_window", tpe=float, default=0)
-            stoploss_threshold = get_arg("stoploss_threshold", tpe=float, default=0)
-            sahm_threshold = get_arg("sahm_threshold", tpe=float, default=1)
+        args = {}
 
-            config = Config(margin, margin_lose, rsi_threshold, burst_threshold, 
-                            burst_rate, margin_window, stoploss_threshold, sahm_threshold)
-        
-        elif ticker != 'all':
-            config = best_configs[ticker]
+        if plot:
+            plot_graph(ticker, start, end)
+            continue
+
+        if config != "best":
+            for field, value in asdict(Config()).items():
+                args[field] = get_arg(field, tpe=type(value), default=None)
+
+        if ticker != "all":
+            config = copy.deepcopy(best_configs[ticker])
+            for k, v in args.items():
+                if v is not None:
+                    setattr(config, k, v)
 
         if stop[0]:
             print("")
             continue
 
-        print_args()
-
-        if ticker != 'all':
-            test(ticker, 2, config)
+        if ticker != "all":
+            print_config(config)
+            test(ticker, 2, config, start, end)
 
         else:
-            for ticker in TICKERS:
-                if config == 'best':
+            for ticker in TICKERS.keys():
+                if config == "best":
                     c = best_configs[ticker]
                 else:
-                    c = config
-                    
-                test(ticker, 2, c)
+                    c = copy.deepcopy(best_configs[ticker])
+                    for k, v in args.items():
+                        if v is not None:
+                            setattr(c, k, v)
+
+                print_config(c)
+                test(ticker, MAX_CYCLES, c, start, end)
+
 
 if __name__ == "__main__":
     main()

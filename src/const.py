@@ -26,7 +26,6 @@ class StockRow:
     date: str
     price: float
     close_price: float
-    rsi: float
 
     def __iter__(self):
         return iter(astuple(self))
@@ -56,6 +55,7 @@ class State:
     def __iter__(self):
         return iter(astuple(self))
 
+
 @dataclass
 class Result:
     start: str
@@ -63,7 +63,6 @@ class Result:
     sold: bool
     ror: float
     base_ror: float
-    u50_rate: float
 
 
 @dataclass

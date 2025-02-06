@@ -1,4 +1,5 @@
 import csv
+import json
 import matplotlib
 
 import matplotlib.pyplot as plt
@@ -10,30 +11,26 @@ from .const import StockRow, State
 
 matplotlib.use("TkAgg")
 
-INIT = "init"
-FIN = "fin"
-TICKERS = {"TQQQ": "QQQ", "SOXL": "SOXX", "SPXL": "SPY", 
-           "NAIL": "DJUSHB", "TECL": "XLK"}
+with open("tickers.json", "r") as fd:
+    TICKERS = json.loads(fd.read())
 
 
 def read_chart(ticker: str, start: str, end: str) -> List[StockRow]:
     ticker = ticker.upper()
-    # if ticker not in TICKERS.keys():
-    #     raise Exception(f"'{ticker}' is not supported")
+    if ticker not in TICKERS.keys():
+        raise Exception(f"'{ticker}' is not supported")
 
-    with open(f"charts/{ticker}-SIM-RSI.csv", "r") as fd:
+    with open(f"charts-new/{ticker}-GEN.csv", "r") as fd:
         reader = csv.reader(fd)
-        history = [
-            StockRow(d, float(p), float(cp), float(r)) for d, p, cp, r in reader
-        ]
+        history = [StockRow(d, float(p), float(cp)) for d, p, cp in reader]
 
     sidx = 0
-    if start != INIT:
+    if start != "":
         matching = [d.startswith(start) for d, _, _, _ in history]
         sidx = matching.index(True)
 
     eidx = len(history)
-    if end != FIN:
+    if end != "":
         matching = [d.startswith(end) for d, _, _, _ in history]
         eidx = len(matching) - list(reversed(matching)).index(True)
 
@@ -47,77 +44,23 @@ def read_base_chart(ticker: str, start: str, end: str) -> List[StockRow]:
 
     base_ticker = TICKERS[ticker]
 
-    with open(f"charts/{base_ticker}.csv", "r") as fd:
+    with open(f"charts-new/{base_ticker}.csv", "r") as fd:
         data = list(csv.reader(fd))
-        if len(data[0]) > 3:
-            history = [
-                StockRow(d, float(p), float(cp), 0)
-                for d, p, _, _, _, cp, _ in data[1:]
-            ]
-        else:
-            history = [
-                StockRow(d, float(p), float(cp), 0)
-                for d, p, cp in data[1:]
-            ]
+        history = [
+            StockRow(d, float(p), float(cp)) for d, p, _, _, cp, _ in data[1:]
+        ]
 
     sidx = 0
-    if start != INIT:
+    if start != "":
         matching = [d.startswith(start) for d, _, _, _ in history]
         sidx = matching.index(True)
 
     eidx = len(history)
-    if end != FIN:
+    if end != "":
         matching = [d.startswith(end) for d, _, _, _ in history]
         eidx = len(matching) - list(reversed(matching)).index(True)
 
     return history[sidx:eidx]
-
-
-def read_aaii(chart: List[StockRow]) -> Dict[str, float]:
-    def convert_date(date: str) -> str:
-        month, day, year = date.split("-")
-        if len(month) == 1:
-            month = "0" + month
-
-        if year[0] in ["8", "9"]:
-            year = "19" + year
-        else:
-            year = "20" + year
-
-        return f"{year}-{month}-{day}"
-
-    def compute_score(bullish: float, bearish: float) -> float:
-        return bullish / (bullish + bearish)
-
-    with open(f"indices/aaii.csv", "r") as fd:
-        reader = csv.reader(fd)
-        history = [
-            (convert_date(d), compute_score(float(bu[:-1]), float(be[:-1])))
-            for d, bu, _, be in reader
-        ]
-
-    deltas = [
-        (h2[0], (h2[1] - h1[1]) * 100)
-        for h1, h2 in zip(history[:-1], history[1:])
-    ]
-
-    aaii: Dict[str, float] = {}
-    for date, delta in deltas:
-        dt = datetime.strptime(date, "%Y-%m-%d")
-
-        for i in range(8):
-            idx = dt + timedelta(days=i)
-            aaii[idx.strftime("%Y-%m-%d")] = delta
-
-    last_delta = aaii[chart[0].date]
-    for d, _, _ in chart:
-        if d in aaii.keys():
-            last_delta = aaii[d]
-
-        else:
-            aaii[d] = last_delta
-
-    return aaii
 
 
 def read_sahm() -> Dict[str, float]:
@@ -132,32 +75,89 @@ def read_sahm() -> Dict[str, float]:
     return sahm
 
 
-def moving_average(chart: List[StockRow], term: int) -> Dict[str, float]:
+def compute_moving_average(
+    chart: List[StockRow], term: int
+) -> Dict[str, float]:
     avg_history = {}
 
     prices = []
-    for date, p, cp, _ in chart:
-        avg_history[date] = sum(prices) / len(prices) if prices else p
-
-        prices += [p]
-
+    for date, p, cp in chart:
+        prices += [cp]
         if len(prices) > term:
             prices.pop(0)
+
+        avg_history[date] = sum(prices) / len(prices) if prices else p
 
     return avg_history
 
 
-def plot(ticker: str, histories: Dict[str, List[State]]):
-    dates = [s.date for s in list(histories.values())[0]]
+def compute_urates(chart: List[StockRow], avg: int, term: int):
+    avg_history = compute_moving_average(chart, avg)
+    u_rates = {}
 
-    fig = plt.figure(figsize=(20, 8))
-    ax = fig.add_subplot(111)
+    u_counters = []
+    for c in chart:
+        u_counters.append(int(c.close_price < avg_history[c.date]))
+        if len(u_counters) > term:
+            u_counters.pop(0)
 
-    for l, h in histories.items():
-        rors = [s.ror for s in h]
+        u_rates[c.date] = sum(u_counters) / len(u_counters)
 
-        ax.plot(rors, label=l)
+    return u_rates
 
+
+def compute_rsi(chart: List[StockRow], term: int) -> Dict[str, tuple]:
+    rsis = {}
+
+    def compute(ps: List[float]):
+        if len(ps) <= 1:
+            return 50
+
+        diffs = [n - p for p, n in zip(ps[:-1], ps[1:])]
+
+        tot_change = sum([d if d > 0 else -d for d in diffs])
+        upgoing = sum([d for d in diffs if d > 0])
+
+        return 100 * upgoing / tot_change
+
+    prices = []
+    for date, _, cp in chart:
+        prices += [cp]
+        if len(prices) > term + 1:
+            prices.pop(0)
+
+        rsis[date] = compute(prices)
+
+    return rsis
+
+
+def compute_volatility(chart: List[StockRow], term: int) -> Dict[str, float]:
+    volatility = {}
+
+    def compute(ps: List[float]):
+        if len(ps) <= 1:
+            return 0
+
+        diffs = [n - p for p, n in zip(ps[:-1], ps[1:])]
+
+        tot_change = sum([abs(d) for d in diffs])
+        last_change = diffs[-1]
+
+        return 100 * last_change / tot_change
+
+    prices = []
+    for date, _, cp in chart:
+        volatility[date] = compute(prices)
+
+        prices += [cp]
+
+        if len(prices) > term + 1:
+            prices.pop(0)
+
+    return volatility
+
+
+def get_ticks(dates: List[str]):
     xticks = []
     xticklabels = []
 
@@ -170,92 +170,36 @@ def plot(ticker: str, histories: Dict[str, List[State]]):
             xticklabels.append(d[0:4])
             last_year = year
 
-        # elif last_m == "01" and m == "07":
-        #     xticks.append(i)
-        #     xticklabels.append(d)
-        #     last_m = "07"
+    return xticks, xticklabels
 
-    ax.set_xticks(xticks)
-    ax.set_xticklabels(xticklabels)
 
-    ax.set_title(ticker + " from " + dates[0][:4])
-    ax.legend()
+def plot_graph(ticker: str, start: str, end: str):
+    chart = read_chart(ticker, start, end)
+    avgs = compute_moving_average(chart, 50)
+    urates = compute_urates(chart, 50, 40)
+    rsis = compute_rsi(chart, 5)
 
-    ax.grid(axis="y")
-
-    plt.show()
-
-def plot_with_rsi(ticker: str, chart: List[StockRow], 
-                  threshold: int, burst_threshold: int):
-    dates = [s.date for s in list(chart)]
+    dates = [s.date for s in chart]
 
     fig = plt.figure(figsize=(20, 8))
-    ax = fig.add_subplot(111)
+    ax1 = fig.add_subplot(111)
+    # ax2 = ax1.twinx()
 
-    prices = [s.price for s in chart]
-    rsis = [s.rsi for s in chart]
-    
-    ax.plot(prices)
-    ax.plot(rsis)
+    ax1.plot([c.close_price for c in chart], color="black", label="price")
+    ax1.plot(
+        [avgs[c.date] for c in chart], color="green", label="moving-average"
+    )
 
-    xticks = []
-    xticklabels = []
+    # ax2.plot([urates[c.date] * 100 for c in chart], color="cyan", label="urate")
+    # ax2.plot([rsis[c.date] for c in chart], color="red", label="rsi")
 
-    last_year = ''
-    for i, d in enumerate(dates):
-        y, m = d.split('-')[0:2]
-        
-        if y != last_year and m == '01':
-            xticks.append(i)
-            xticklabels.append(d[0:4])
-            last_year = y
+    xticks, xticklabels = get_ticks(dates)
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels(xticklabels)
 
-    ax.set_xticks(xticks)
-    ax.set_xticklabels(xticklabels)
+    ax1.set_title(f"{ticker} ({dates[0]} ~ {dates[-1]}) ")
+    ax1.legend()
+    # ax2.legend()
 
-    ax.axhline(y=threshold, color='g')
-    ax.axhline(y=burst_threshold, color='r')
-
-    ax.set_title(ticker + ' from ' + dates[0][:4])
-    ax.grid(axis='y')
-
-    plt.show()
-
-
-def plot_avg_price(ticker: str, histories: Dict[str, List[State]]):
-    dates = [s.date for s in list(histories.values())[0]]
-
-    fig = plt.figure(figsize=(20, 8))
-    ax = fig.add_subplot(111)
-
-    for l, h in histories.items():
-        avg_prices = [s.stock_avg for s in h]
-
-        ax.plot(avg_prices, label=l)
-
-    xticks = []
-    xticklabels = []
-
-    last_year = ""
-    for i, d in enumerate(dates):
-        year, m = d.split("-")[0:2]
-
-        if year != last_year and m == "01":
-            xticks.append(i)
-            xticklabels.append(d[0:4])
-            last_year = year
-
-        # elif last_m == "01" and m == "07":
-        #     xticks.append(i)
-        #     xticklabels.append(d)
-        #     last_m = "07"
-
-    ax.set_xticks(xticks)
-    ax.set_xticklabels(xticklabels)
-
-    ax.set_title(ticker + " from " + dates[0][:4])
-    ax.legend()
-
-    ax.grid(axis="y")
-
+    ax1.grid(axis="y")
     plt.show()
