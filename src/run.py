@@ -1,3 +1,5 @@
+import sys
+
 from typing import List, Dict
 from .const import StockRow, Result, Stat
 from .utils import (
@@ -14,12 +16,12 @@ from datetime import datetime, timedelta
 
 MARKET_DAYS_PER_YEAR = 260
 
-BULLISH_RSI = 80
-BEARISH_RSI = 40
-BEARISH_SCALE = 0.4
-BULLISH_U50 = 0.5
-BEARISH_U50 = 0.6
-BURST_VOL = 30
+# BULLISH_RSI = 80
+# BEARISH_RSI = 40
+# BEARISH_SCALE = 0.4
+# BULLISH_U50 = 0.5
+# BEARISH_U50 = 0.6
+# BURST_VOL = 30
 
 
 TERM = 40
@@ -31,6 +33,12 @@ D5_VOLATILITY = None
 SAHM_INDICATOR = None
 
 CONFIG = None
+VERBOSE = False
+
+
+def vprint(s):
+    if VERBOSE:
+        print(s)
 
 
 def test(
@@ -40,10 +48,11 @@ def test(
     start: str,
     end: str,
     verbose=False,
-):
+) -> float:
 
-    global CONFIG
+    global CONFIG, VERBOSE
     CONFIG = config
+    VERBOSE = verbose
 
     chart = read_chart(ticker, start, end)
     base_chart = read_base_chart(ticker, start, end)
@@ -66,7 +75,7 @@ def test(
     stats: List[Stat] = []
     results: Dict[int, List[Result]] = {}
 
-    print(f"======== Result for {ticker} ========")
+    vprint(f"======== Result for {ticker} ========")
 
     for c in range(max_cycles):
         results[c] = []
@@ -151,28 +160,35 @@ def test(
 
         stats.append(stat)
 
-        if verbose:
-            print(
-                f"""[Cycle {c}] ({total})
-rate_of_better_sold: {rate_of_better_sold * 100:.2f}%\trate_of_sold:    {rate_of_sold * 100:.2f}% ({btb_s + wtb_s})
-avg_days_of_sold:    {avg_days_of_sold:.0f}\t\tavg_ror_of_sold: {avg_ror_of_sold * 100:.2f}%"""
-                + (
-                    f"\n avg_ror_of_not_sold: {avg_ror_of_not_sold * 100:.2f}%"
-                    if c == max_cycles - 1
-                    else ""
-                )
-            )
-            print(f"Min RoR: {min(r.ror for r in results[c]) * 100:.2f} %")
+    #         if verbose:
+    #             print(
+    #                 f"""[Cycle {c}] ({total})
+    # rate_of_better_sold: {rate_of_better_sold * 100:.2f}%\trate_of_sold:    {rate_of_sold * 100:.2f}% ({btb_s + wtb_s})
+    # avg_days_of_sold:    {avg_days_of_sold:.0f}\t\tavg_ror_of_sold: {avg_ror_of_sold * 100:.2f}%"""
+    #                 + (
+    #                     f"\n avg_ror_of_not_sold: {avg_ror_of_not_sold * 100:.2f}%"
+    #                     if c == max_cycles - 1
+    #                     else ""
+    #                 )
+    #             )
+    #             print(f"Min RoR: {min(r.ror for r in results[c]) * 100:.2f} %")
 
     fail_rate = compute_fail_rate(stats)
     avg_ror_per_year = compute_avg_ror(results, max_cycles)
 
-    print(
+    score = (1 - fail_rate) * avg_ror_per_year * 100
+
+    vprint(
         f"Fail rate: {fail_rate * 100:.2f}%, Average RoR per year: {avg_ror_per_year * 100:.2f}%, Score: {(1 - fail_rate) * avg_ror_per_year * 100:.2f}"
     )
-    print(f"=====================================")
+    vprint(f"=====================================")
 
-    return results
+    print(
+        f"{CONFIG} | {score:.2f} ({avg_ror_per_year * 100:.1f}%, {fail_rate * 100:.1f}%)"
+    )
+
+    sys.stdout.flush()
+    return score
 
 
 def simulate(
@@ -207,23 +223,33 @@ def simulate(
         rsi = D5_RSI[c.date]
         vol = D5_VOLATILITY[c.date]
         u50_rate = U50_RATES[c.date]
+        bearish_scale = 1 - CONFIG.min_bearish_rate
 
-        if rsi > BULLISH_RSI:
+        if rsi > CONFIG.bullish_rsi:
             rate = 0
-        elif rsi < BEARISH_RSI:
+        elif rsi < CONFIG.bearish_rsi:
             rate *= float(
                 min(
                     1,
-                    CONFIG.min_bearish_rate + BEARISH_SCALE * rsi / BEARISH_RSI,
+                    CONFIG.min_bearish_rate
+                    + bearish_scale * rsi / CONFIG.bearish_rsi,
                 )
             )
 
-        if CONFIG.burst_rate > 0:
-            if u50_rate < BULLISH_U50 and vol < 0 and abs(vol) > BURST_VOL:
-                rate *= float(CONFIG.burst_rate * vol / BURST_VOL)
+        if (
+            u50_rate < CONFIG.bullish_u50
+            and vol < 0
+            and abs(vol) > CONFIG.burst_vol
+        ):
+            rate *= (
+                1
+                + CONFIG.burst_scale
+                * (vol - CONFIG.burst_vol)
+                / CONFIG.burst_vol
+            )
 
-            # elif u50_rate > BEARISH_U50 and vol > 0 and abs(vol) > BURST_VOL:
-            #     rate *= 1 / 2
+        # elif u50_rate > BEARISH_U50 and vol > 0 and abs(vol) > BURST_VOL:
+        #     rate *= 1 / 2
 
         dqty = int(dqtyD * rate)
 
