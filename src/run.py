@@ -176,7 +176,7 @@ def test(
     fail_rate = compute_fail_rate(stats)
     avg_ror_per_year = compute_avg_ror(results, max_cycles)
 
-    score = (1 - fail_rate) * avg_ror_per_year * 100
+    score = (1 - fail_rate) * avg_ror_per_year * 100 if fail_rate < 0.1 else 0
 
     vprint(
         f"Fail rate: {fail_rate * 100:.2f}%, Average RoR per year: {avg_ror_per_year * 100:.2f}%, Score: {(1 - fail_rate) * avg_ror_per_year * 100:.2f}"
