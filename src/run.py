@@ -55,7 +55,8 @@ def test(
     VERBOSE = verbose
 
     chart = read_chart(ticker, start, end)
-    base_chart = read_base_chart(ticker, start, end)
+    base_chart = chart
+    # base_chart = read_base_chart(ticker, start, end)
 
     global U50_RATES, D5_RSI, D5_VOLATILITY, SAHM_INDICATOR
     U50_RATES = compute_urates(chart, 50, TERM)
@@ -74,8 +75,6 @@ def test(
 
     stats: List[Stat] = []
     results: Dict[int, List[Result]] = {}
-
-    vprint(f"======== Result for {ticker} ========")
 
     for c in range(max_cycles):
         results[c] = []
@@ -178,13 +177,12 @@ def test(
 
     score = (1 - fail_rate) * avg_ror_per_year * 100 if fail_rate < 0.1 else 0
 
-    vprint(
-        f"Fail rate: {fail_rate * 100:.2f}%, Average RoR per year: {avg_ror_per_year * 100:.2f}%, Score: {(1 - fail_rate) * avg_ror_per_year * 100:.2f}"
-    )
-    vprint(f"=====================================")
+    # for r in results[1]:
+    #     if not r.sold:
+    #         print(f"{r.start} ~ {r.end}: {r.ror}")
 
     print(
-        f"{CONFIG} | {score:.2f} ({avg_ror_per_year * 100:.1f}%, {fail_rate * 100:.1f}%)"
+        f"{ticker}: {CONFIG} | {score:.2f} ({avg_ror_per_year * 100:.1f}%, {fail_rate * 100:.1f}%)"
     )
 
     sys.stdout.flush()
@@ -300,7 +298,7 @@ def simulate(
 
     ror = (sell_price * stock_qty + remaining_seed) / SEED - 1
 
-    return Result(chart[0].date, days, sold, ror, base_ror)
+    return Result(chart[0].date, days, sold, ror, base_ror, c.date)
 
 
 def compute_avg_ror(results: Dict[int, List[Result]], max_cycles: int):

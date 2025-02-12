@@ -63,6 +63,7 @@ class Result:
     sold: bool
     ror: float
     base_ror: float
+    end: str
 
 
 @dataclass

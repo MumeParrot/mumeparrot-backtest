@@ -26,12 +26,12 @@ def read_chart(ticker: str, start: str, end: str) -> List[StockRow]:
 
     sidx = 0
     if start != "":
-        matching = [d.startswith(start) for d, _, _, _ in history]
+        matching = [d.startswith(start) for d, _, _ in history]
         sidx = matching.index(True)
 
     eidx = len(history)
     if end != "":
-        matching = [d.startswith(end) for d, _, _, _ in history]
+        matching = [d.startswith(end) for d, _, _ in history]
         eidx = len(matching) - list(reversed(matching)).index(True)
 
     return history[sidx:eidx]
@@ -52,12 +52,12 @@ def read_base_chart(ticker: str, start: str, end: str) -> List[StockRow]:
 
     sidx = 0
     if start != "":
-        matching = [d.startswith(start) for d, _, _, _ in history]
+        matching = [d.startswith(start) for d, _, _ in history]
         sidx = matching.index(True)
 
     eidx = len(history)
     if end != "":
-        matching = [d.startswith(end) for d, _, _, _ in history]
+        matching = [d.startswith(end) for d, _, _ in history]
         eidx = len(matching) - list(reversed(matching)).index(True)
 
     return history[sidx:eidx]

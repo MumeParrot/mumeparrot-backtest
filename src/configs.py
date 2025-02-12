@@ -48,27 +48,26 @@ class Config:
         return ", ".join(l)
 
 
-best_configs = {ticker: Config() for ticker, _ in TICKERS.items()}
-
-# best_configs["SOXL"] = Config(margin=0.1, burst_scale=1.1)
-# best_configs["UPRO"] = Config(
-#     margin=0.06, burst_scale=1.2, min_bearish_rate=0.2
-# )
-# best_configs["SPXL"] = Config(
-#     margin=0.06, burst_scale=1.2, min_bearish_rate=0.2
-# )
-# best_configs["TQQQ"] = Config(
-#     margin=0.09, burst_scale=1.3, min_bearish_rate=0.2
-# )
-# best_configs["TECL"] = Config(
-#     margin=0.08, burst_scale=1.6, min_bearish_rate=0.2
-# )
-# best_configs["NAIL"] = Config(margin=0.09, min_bearish_rate=0.6)
-# best_configs["RETL"] = Config(margin=0.06, min_bearish_rate=0.4)
-# best_configs["WEBL"] = Config(
-#     margin=0.09, burst_scale=1.2, min_bearish_rate=0.4
-# )
-
+best_configs = {
+    "CURE": Config(margin=0.06, bullish_rsi=60, bullish_u50=0.5, burst_scale=1.5, burst_vol=40),
+    "DFEN": Config(margin=0.06, bullish_rsi=85, bullish_u50=0.3, burst_scale=0.5, burst_vol=40),
+    "FAS": Config(margin=0.08, bullish_rsi=70),
+    "FNGU": Config(margin=0.08, bullish_rsi=65),
+    "HIBL": Config(margin=0.07, bullish_rsi=65),
+    "LABU": Config(margin=0.12, bullish_rsi=85),
+    "MIDU": Config(margin=0.05, bullish_rsi=60),
+    "NAIL": Config(margin=0.12, bullish_rsi=80, bullish_u50=0.4, burst_scale=2, burst_vol=30),
+    "PILL": Config(margin=0.09, bullish_rsi=60, bullish_u50=0.5, burst_scale=2, burst_vol=40),
+    "RETL": Config(margin=0.05, bullish_rsi=60, bullish_u50=0.4, burst_scale=0.5, burst_vol=30),
+    "SOXL": Config(margin=0.1, bullish_rsi=95, bullish_u50=0.6, burst_scale=1.5, burst_vol=45),
+    "SPXL": Config(margin=0.05, bullish_rsi=85),
+    "TECL": Config(margin=0.07, bullish_rsi=95, bullish_u50=0.3, burst_scale=1.5, burst_vol=45),
+    "TNA": Config(margin=0.07, bullish_rsi=75, bullish_u50=0.5, burst_scale=2, burst_vol=45),
+    "TQQQ": Config(margin=0.1, bullish_rsi=85, bullish_u50=0.5, burst_scale=0.5, burst_vol=30),
+    "UPRO": Config(margin=0.05, bullish_rsi=85),
+    "WANT": Config(margin=0.07, bullish_rsi=80, bullish_u50=0.5, burst_scale=1.5, burst_vol=35),
+    "WEBL": Config(margin=0.09, bullish_rsi=90, bullish_u50=0.6, burst_scale=1, burst_vol=40),
+}
 
 def print_config(config: Config, ticker=""):
     d = asdict(config)
