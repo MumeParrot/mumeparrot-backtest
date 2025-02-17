@@ -1,6 +1,7 @@
 import csv
 import json
 import matplotlib
+import math
 
 import matplotlib.pyplot as plt
 
@@ -9,7 +10,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from .const import StockRow, State
 
-matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
 
 with open("tickers.json", "r") as fd:
     TICKERS = json.loads(fd.read())
@@ -156,6 +157,28 @@ def compute_volatility(chart: List[StockRow], term: int) -> Dict[str, float]:
 
     return volatility
 
+def compute_quad_var(
+    chart: List[StockRow], term: int
+) -> Dict[str, float]:
+    avg_quad_var_history = {}
+
+    quad_vars = []
+    for date_idx, (date, p, cp) in enumerate(chart):
+        if date_idx == 0:
+            quad_vars += [0]
+            prev_price = cp
+        else:
+            quad_vars +=\
+                [(math.log10(cp) - math.log10(prev_price))**2]
+            prev_price = cp
+        if len(quad_vars) > term:
+            quad_vars.pop(0)
+
+        avg_quad_var_history[date] = sum(quad_vars) / len(quad_vars) if quad_vars else p
+
+    return avg_quad_var_history
+
+
 
 def get_ticks(dates: List[str]):
     xticks = []
@@ -178,12 +201,13 @@ def plot_graph(ticker: str, start: str, end: str):
     avgs = compute_moving_average(chart, 50)
     urates = compute_urates(chart, 50, 40)
     rsis = compute_rsi(chart, 5)
+    quad_vars = compute_quad_var(chart, 60)
 
     dates = [s.date for s in chart]
 
     fig = plt.figure(figsize=(20, 8))
     ax1 = fig.add_subplot(111)
-    # ax2 = ax1.twinx()
+    ax2 = ax1.twinx()
 
     ax1.plot([c.close_price for c in chart], color="black", label="price")
     ax1.plot(
@@ -192,14 +216,20 @@ def plot_graph(ticker: str, start: str, end: str):
 
     # ax2.plot([urates[c.date] * 100 for c in chart], color="cyan", label="urate")
     # ax2.plot([rsis[c.date] for c in chart], color="red", label="rsi")
+    ax2.plot([quad_vars[c.date] for c in chart], color="blue", label="quad_var")
+
 
     xticks, xticklabels = get_ticks(dates)
     ax1.set_xticks(xticks)
     ax1.set_xticklabels(xticklabels)
+    ax1.set_yscale("log")
 
     ax1.set_title(f"{ticker} ({dates[0]} ~ {dates[-1]}) ")
-    ax1.legend()
+    # ax1.legend()
     # ax2.legend()
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper right')
 
     ax1.grid(axis="y")
     plt.show()
