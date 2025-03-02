@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from .const import StockRow, State
 
-matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
 
 with open("tickers.json", "r") as fd:
     TICKERS = json.loads(fd.read())
