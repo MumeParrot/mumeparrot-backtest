@@ -33,24 +33,18 @@ now: datetime = None
     required=True,
     help="output directory to save chart csv files",
 )
-@click.option(
-    "--credentials",
-    "-c",
-    required=True,
-    help="oauth credentials for accessing google spreadsheet",  # TODO
-)
 @click.option("--graph", "-g", is_flag=True, help="Draw graph for each ticker")
-def main(input, output, credentials, graph):
+def main(input, output, graph):
     global gc, now
 
     try:
-        gc = gspread.oauth(credentials_filename=credentials)
-    except:
-        print(f"Error setting google oauth with '{credentials}'")
+        gc = gspread.service_account(filename='bot.json')
+    except Exception as e:
+        print(f"Error getting gspread service account\n${e}")
         sys.exit(0)
     finally:
         if not gc:
-            print(f"Error setting google oauth with '{credentials}'")
+            print(f"Error getting gspread service account")
             sys.exit(0)
 
     now = datetime.now()
@@ -99,8 +93,8 @@ def fetch(ticker: str) -> pd.DataFrame:
     tmp = f"{ticker}-{random.randint(0, 10000)}"
     y, m, d = now.year, now.month, now.day
 
-    file = gc.create(tmp)
-    sheet = file.sheet1
+    file = gc.open('mumeparrot-backtest-notepad')
+    sheet = file.add_worksheet(title=tmp, rows=1, cols=1)
     sheet.update(
         "A1",
         [
@@ -140,7 +134,7 @@ def fetch(ticker: str) -> pd.DataFrame:
 
         df.loc[i, "Date"] = f"{y}-{m}-{d}"
 
-    gc.del_spreadsheet(file.id)
+    file.del_worksheet(sheet)
 
     # XRT (base of RETL) has strange row, just remove it
     if ticker == "XRT":

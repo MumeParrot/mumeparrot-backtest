@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "mumeparrot-7f65b",
+  "private_key_id": "2e29ed010e41b5d69f6f84ce3607432b9874ed52",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCPfe3/ulYsQLx9\ndXMYAArmJHI4gnL6oCOTD4aSuFRh94HOyUk+dPoEdTH8ju/FqW+hFBMB5tJb9Eu7\nkR+xgWIvhIEjlzm75utnCg3qotZXBplOQqjvjAuclQ9JvzMu2AOTZMImvrUyquMu\n/shtcivoe261mPuiY24ozWN4y5opD16xJq5h5nIwVeSKllPeynFc98RO+WpvUR7a\nL75nVlYIvxfS2VMINX3POjebHi5ZBoxHmhMQ0jk7WfZpAvCBtkz8nAXyCLdCJBwd\n7okjhDWh+Ehwav8Aw8/qe15wGYjvODi84p46X0fghlP7MTKTWWL5rGiwaKvvZ77X\nRx3D7rRxAgMBAAECggEAAzF/wvGwKkL0juw2uAGEPJPyEMziZy56LDMrwQcmJZn/\nAw2aui+bQs8i4iaCMolvSQvr0l6DLvW0W8PCi05AU6Nkxlh+ue5NLdlc7uxZzc0B\nS2sTXGVm+sCcev0s0+2NwtF6uqcC3FJORQT5i+n/DSj2EUeKzhXdZT4Q6SbK0wAS\niE9qjP8mCyUJMVCl8jCIH7oyYuX3QvrfCOR4Lspd8UhSKOiUO7wjDM5I+xHHN990\nAmQoP+L8L3UeVhHsuZbiyAPEbIma6n9+EHPmvt19Pq6EU+F7ypp0ARDIcP35T9F2\n1QO2YNc67VLWMxbr8Vw911D+y7zzCOF4Mbrw1Kbn+wKBgQDEoa8brIl+pqrE9l7b\nu+ZitVwknatlAn83XTaatTTyVUipqpjUGep16jZn2YfxAOu7bEgShzgnHDFP8HUc\nms9UpFqIK2zHBDTihY4XpAx0HPlQEIOBMLXZsXe4wNLd1l7SUlokGE/MMjgy+XTl\nBKbXBqaDEWZAQbnpPyikzfaV7wKBgQC60Ob3eUye4mGbnKtxq6CDgebnM5GRw9sd\n2p0m/DE7vkx9kB6YU5evLYjlMg0xjsAA47dXgFiAGMlgquIdWxQwngSCBcrPqhKU\n9ubb59zWduiAbDlXtYH2qIIyq0D/j13OPdrQ63Qvq4nNeIsQKabWzLM0va7S6mjA\nwnvtfd67nwKBgC5+8RJBLU4WiSEEBRA+kU7cBcrewa2j9oMX9paErN10zzbXkUXu\nTuPNG0pZROz3Q8bQ5wYClYOiBgMaIAdAkDA6oPG8Gv/AfeTmod/zOcKnK0kEbqQ4\n6XdtoJq+dd5hF5DySkBow03Mvj9Hf528CNulxfAOSDh/kj+WYLz/uwRfAoGAG5Zp\n5TXGeNgZbe9u6fRcWc8/F/lnj80KeJgmCPHJG3d4uDomKnx9s+LXinEfvafE9typ\n4IQVjaUbZ+kURx2CF8PeCo1sa8pDwDfN07+jvxAEOaLBvRASxygPQghEKvky8xfz\nTlLW74s3aF5auuJLvwCvniQ8wuzW11BhGKszzyUCgYAIIKAr37WAz0mADSp2HybP\nm0/PEqFo3jFbMweUbGJMiYZZfYrnu7emkImdfzRVtCb5MbJWUki5t/rCQ57mqFXv\ns1w+SktgXdgZbGVyw4hC+XzAgR+3p59iTsf7ciByfBillgz+8ijNmReGW0fVnzlE\ndyev8xl9DqidFijYMaj7ow==\n-----END PRIVATE KEY-----\n",
+  "client_email": "mumeparrot@mumeparrot-7f65b.iam.gserviceaccount.com",
+  "client_id": "116831656065229055624",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mumeparrot%40mumeparrot-7f65b.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
