@@ -27,14 +27,8 @@ now: datetime = None
     required=True,
     help="json file containing key, value map of 3-times ticker and 1-times base ticker",
 )
-@click.option(
-    "--output",
-    "-o",
-    required=True,
-    help="output directory to save chart csv files",
-)
 @click.option("--graph", "-g", is_flag=True, help="Draw graph for each ticker")
-def main(input, output, graph):
+def main(input, graph):
     global gc, now
 
     try:
@@ -49,7 +43,7 @@ def main(input, output, graph):
 
     now = datetime.now()
 
-    os.makedirs(output, exist_ok=True)
+    os.makedirs('charts', exist_ok=True)
 
     tickers: Dict[str, str] = None
     try:
@@ -74,8 +68,8 @@ def main(input, output, graph):
         except KeyError as e:
             raise e
 
-        triple_chart.to_csv(f"{output}/{triple}.csv", index=False)
-        base_chart.to_csv(f"{output}/{base}.csv", index=False)
+        triple_chart.to_csv(f"charts/{triple}.csv", index=False)
+        base_chart.to_csv(f"charts/{base}.csv", index=False)
 
         merged, generated = process(triple_chart, base_chart)
 
@@ -83,7 +77,7 @@ def main(input, output, graph):
             plot(triple, merged, generated)
 
         merged_to_csv = [f"{i[0]},{i[1][0]},{i[1][1]}\n" for i in merged]
-        with open(f"{output}/{triple}-GEN.csv", "w") as fd:
+        with open(f"charts/{triple}-GEN.csv", "w") as fd:
             fd.writelines(merged_to_csv)
 
 

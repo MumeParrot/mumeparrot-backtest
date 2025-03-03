@@ -1,4 +1,4 @@
-import sys
+import sys, os
 
 from typing import List, Dict
 from .const import StockRow, Result, Stat
@@ -16,19 +16,11 @@ from datetime import datetime, timedelta
 
 MARKET_DAYS_PER_YEAR = 260
 
-# BULLISH_RSI = 80
-# BEARISH_RSI = 40
-# BEARISH_SCALE = 0.4
-# BULLISH_U50 = 0.5
-# BEARISH_U50 = 0.6
-# BURST_VOL = 30
-
-
 TERM = 40
 SEED = 1000000
 
 U50_RATES = None
-D5_RSI = None
+RSI = None
 D5_VOLATILITY = None
 SAHM_INDICATOR = None
 
@@ -58,9 +50,11 @@ def test(
     base_chart = chart
     # base_chart = read_base_chart(ticker, start, end)
 
-    global U50_RATES, D5_RSI, D5_VOLATILITY, SAHM_INDICATOR
+    rsi_days = int(os.environ.get('RSI_DAYS', 5))
+
+    global U50_RATES, RSI, D5_VOLATILITY, SAHM_INDICATOR
     U50_RATES = compute_urates(chart, 50, TERM)
-    D5_RSI = compute_rsi(chart, 5)
+    RSI = compute_rsi(chart, rsi_days)
     D5_VOLATILITY = compute_volatility(chart, 5)
     SAHM_INDICATOR = read_sahm()
 
@@ -175,7 +169,7 @@ def test(
     fail_rate = compute_fail_rate(stats)
     avg_ror_per_year = compute_avg_ror(results, max_cycles)
 
-    score = (1 - fail_rate) * avg_ror_per_year * 100 if fail_rate < 0.1 else 0
+    score = (1 - 2 * fail_rate) * avg_ror_per_year * 100 if fail_rate < 0.05 else 0
 
     # for r in results[1]:
     #     if not r.sold:
@@ -208,6 +202,10 @@ def simulate(
 
     for c, b in zip(chart, base_chart):
         margin = CONFIG.margin
+        rsi = RSI[c.date]
+        vol = D5_VOLATILITY[c.date]
+        u50_rate = U50_RATES[c.date]
+        bearish_scale = 1 - CONFIG.min_bearish_rate
 
         if stock_qty > 0 and c.close_price > avg_price * (1 + margin):
             base_end_price = b.close_price
@@ -217,11 +215,6 @@ def simulate(
 
         dqtyD = float(daily_seed / c.close_price)
         rate = float(1)
-
-        rsi = D5_RSI[c.date]
-        vol = D5_VOLATILITY[c.date]
-        u50_rate = U50_RATES[c.date]
-        bearish_scale = 1 - CONFIG.min_bearish_rate
 
         if rsi > CONFIG.bullish_rsi:
             rate = 0
