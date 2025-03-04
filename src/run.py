@@ -209,7 +209,7 @@ def simulate(
 
         if stock_qty > 0 and c.close_price > avg_price * (1 + margin):
             base_end_price = b.close_price
-            sell_price = avg_price * (1 + margin)
+            sell_price = c.close_price
             sold = True
             break
 

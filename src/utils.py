@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Tuple
 from .const import StockRow, State
 
-# matplotlib.use("TkAgg")
+matplotlib.use("TkAgg")
 
 with open("tickers.json", "r") as fd:
     TICKERS = json.loads(fd.read())
@@ -28,12 +28,18 @@ def read_chart(ticker: str, start: str, end: str) -> List[StockRow]:
     sidx = 0
     if start != "":
         matching = [d.startswith(start) for d, _, _ in history]
-        sidx = matching.index(True)
+        try:
+            sidx = matching.index(True)
+        except:
+            pass
 
     eidx = len(history)
     if end != "":
         matching = [d.startswith(end) for d, _, _ in history]
-        eidx = len(matching) - list(reversed(matching)).index(True)
+        try:
+            eidx = len(matching) - list(reversed(matching)).index(True)
+        except:
+            pass
 
     return history[sidx:eidx]
 
@@ -54,12 +60,19 @@ def read_base_chart(ticker: str, start: str, end: str) -> List[StockRow]:
     sidx = 0
     if start != "":
         matching = [d.startswith(start) for d, _, _ in history]
-        sidx = matching.index(True)
+        try:
+            sidx = matching.index(True)
+        except:
+            pass
 
     eidx = len(history)
     if end != "":
         matching = [d.startswith(end) for d, _, _ in history]
-        eidx = len(matching) - list(reversed(matching)).index(True)
+        try:
+            eidx = len(matching) - list(reversed(matching)).index(True)
+        except:
+            pass
+        
 
     return history[sidx:eidx]
 
@@ -91,6 +104,22 @@ def compute_moving_average(
 
     return avg_history
 
+def compute_macd(
+    chart: List[StockRow], short_term: int, long_term: int, rsi_term: int
+) -> Dict[str, float]:
+    short = compute_moving_average(chart, short_term)
+    long = compute_moving_average(chart, long_term)
+    
+    macd = {k: short[k] - long[k] for k in short.keys()}
+
+    mock_chart: List[StockRow] = []
+    for d, _, _ in chart:
+        mock_chart.append(StockRow(d, macd[d], macd[d]))
+
+    macd_rsi = compute_rsi(mock_chart, rsi_term)
+
+    res = {k: (macd[k], macd_rsi[k]) for k in macd_rsi.keys()}
+    return res
 
 def compute_urates(chart: List[StockRow], avg: int, term: int):
     avg_history = compute_moving_average(chart, avg)
@@ -111,7 +140,7 @@ def compute_rsi(chart: List[StockRow], term: int) -> Dict[str, tuple]:
     rsis = {}
 
     def compute(ps: List[float]):
-        if len(ps) <= 1:
+        if len(ps) <= term:
             return 50
 
         diffs = [n - p for p, n in zip(ps[:-1], ps[1:])]
@@ -119,7 +148,7 @@ def compute_rsi(chart: List[StockRow], term: int) -> Dict[str, tuple]:
         tot_change = sum([d if d > 0 else -d for d in diffs])
         upgoing = sum([d for d in diffs if d > 0])
 
-        return 100 * upgoing / tot_change
+        return 100 * upgoing / tot_change if tot_change > 0 else 50
 
     prices = []
     for date, _, cp in chart:
@@ -136,7 +165,7 @@ def compute_volatility(chart: List[StockRow], term: int) -> Dict[str, float]:
     volatility = {}
 
     def compute(ps: List[float]):
-        if len(ps) <= 1:
+        if len(ps) <= term:
             return 0
 
         diffs = [n - p for p, n in zip(ps[:-1], ps[1:])]
@@ -149,7 +178,6 @@ def compute_volatility(chart: List[StockRow], term: int) -> Dict[str, float]:
     prices = []
     for date, _, cp in chart:
         volatility[date] = compute(prices)
-
         prices += [cp]
 
         if len(prices) > term + 1:
@@ -176,20 +204,21 @@ def get_ticks(dates: List[str]):
 
 def plot_graph(ticker: str, start: str, end: str):
     chart = read_chart(ticker, start, end)
-    avgs = compute_moving_average(chart, 50)
-    urates = compute_urates(chart, 50, 40)
-    rsis = compute_rsi(chart, 5)
+    # avg1 = compute_moving_average(chart, 10)
+    # avg2 = compute_moving_average(chart, 20)
+    macd = compute_macd(chart, 10, 20, 20)
 
     dates = [s.date for s in chart]
+    macd_vals = [macd[d][1] for d in dates]
 
     fig = plt.figure(figsize=(20, 8))
     ax1 = fig.add_subplot(111)
-    # ax2 = ax1.twinx()
+    ax2 = ax1.twinx()
 
     ax1.plot([c.close_price for c in chart], color="black", label="price")
-    ax1.plot(
-        [avgs[c.date] for c in chart], color="green", label="moving-average"
-    )
+    ax2.plot(macd_vals, color='red', label='macd')
+    # ax2.plot([avg1[d] for d in dates], color='red', label='macd')
+    # ax2.plot([avg2[d] for d in dates], color='blue', label='macd')
 
     # ax2.plot([urates[c.date] * 100 for c in chart], color="cyan", label="urate")
     # ax2.plot([rsis[c.date] for c in chart], color="red", label="rsi")
@@ -202,7 +231,7 @@ def plot_graph(ticker: str, start: str, end: str):
     ax1.legend()
     # ax2.legend()
 
-    ax1.grid(axis="y")
+    ax1.grid(axis="both")
     plt.show()
 
 def analyze_result(directory: str, ticker: str):
