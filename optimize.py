@@ -9,9 +9,11 @@ import numpy as np
 from dataclasses import asdict
 from scipy.optimize import differential_evolution
 
-from src.run import test
-from src.utils import TICKERS, analyze_result
+from src.test import test
+from src.utils import analyze_result
+
 from src.configs import Bounds, Precisions, Config, best_configs
+from src.env import TICKERS
 
 
 @click.command()
@@ -22,17 +24,14 @@ from src.configs import Bounds, Precisions, Config, best_configs
 def optimize(mode, directory, ticker, fixed):
     if mode == "a":
         for ticker in TICKERS.keys():
-            print(f'====== {ticker} ======')
+            print(f"====== {ticker} ======")
             analyze_result(directory, ticker)
-            print(f'======================')
+            print(f"======================")
 
         sys.exit()
 
-
-    max_cycles = int(os.environ.get("MAX_CYCLES", 2))
     start = os.environ.get("START", "")
     end = os.environ.get("END", "")
-    verbose = os.environ.get("VERBOSE", 0)
 
     if ticker not in TICKERS.keys():
         raise RuntimeError(f"Unknown ticker: {ticker}")
@@ -74,7 +73,7 @@ def optimize(mode, directory, ticker, fixed):
             p = getattr(_precisions, k)
             _config[k] = int(v / p) * p
 
-        return -test(ticker, max_cycles, Config(**_config), start, end, verbose)
+        return -test(ticker, Config(**_config), start, end)
 
     opt = differential_evolution(_test, bounds=bounds)
     print(f"Result: {opt.fun}, Best args: {opt.x}")

@@ -1,8 +1,6 @@
 from typing import Tuple
 from dataclasses import dataclass, asdict
 
-from src.utils import TICKERS
-
 
 @dataclass
 class Bounds:
