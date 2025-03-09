@@ -1,8 +1,6 @@
 from typing import Tuple
 from dataclasses import dataclass, asdict
 
-from src.utils import TICKERS
-
 
 @dataclass
 class Bounds:
@@ -39,6 +37,13 @@ class Config:
     burst_vol: int = 30
     sahm_threshold: float = 1.0
 
+    def __hash__(self):
+        h = 0
+        for k, v in asdict(self).items():
+            h = hash((h, k, v))
+
+        return h
+
     def __str__(self):
         l = []
         for k, v in asdict(self).items():
@@ -49,24 +54,24 @@ class Config:
 
 
 best_configs = {
-    "CURE": Config(margin=0.06, bullish_rsi=60, bullish_u50=0.5, burst_scale=1.5, burst_vol=40),
-    "DFEN": Config(margin=0.06, bullish_rsi=85, bullish_u50=0.3, burst_scale=0.5, burst_vol=40),
-    "FAS": Config(margin=0.08, bullish_rsi=70),
+    "CURE": Config(margin=0.06, bullish_rsi=60, bullish_u50=0.5, burst_vol=25, burst_scale=0.5),
+    "DFEN": Config(margin=0.06, bullish_rsi=85, bullish_u50=0.4, burst_vol=45, burst_scale=1.5),
+    "FAS": Config(margin=0.07, bullish_rsi=80, bullish_u50=0.4, burst_vol=30, burst_scale=0.5),
     "FNGU": Config(margin=0.08, bullish_rsi=65),
     "HIBL": Config(margin=0.07, bullish_rsi=65),
-    "LABU": Config(margin=0.12, bullish_rsi=85),
+    "LABU": Config(margin=0.13, bullish_rsi=60, bullish_u50=0.3, burst_vol=40, burst_scale=2.0),
     "MIDU": Config(margin=0.05, bullish_rsi=60),
-    "NAIL": Config(margin=0.12, bullish_rsi=80, bullish_u50=0.4, burst_scale=2, burst_vol=30),
-    "PILL": Config(margin=0.09, bullish_rsi=60, bullish_u50=0.5, burst_scale=2, burst_vol=40),
-    "RETL": Config(margin=0.05, bullish_rsi=60, bullish_u50=0.4, burst_scale=0.5, burst_vol=30),
-    "SOXL": Config(margin=0.1, bullish_rsi=95, bullish_u50=0.6, burst_scale=1.5, burst_vol=45),
-    "SPXL": Config(margin=0.05, bullish_rsi=85),
-    "TECL": Config(margin=0.07, bullish_rsi=95, bullish_u50=0.3, burst_scale=1.5, burst_vol=45),
-    "TNA": Config(margin=0.07, bullish_rsi=75, bullish_u50=0.5, burst_scale=2, burst_vol=45),
-    "TQQQ": Config(margin=0.1, bullish_rsi=85, bullish_u50=0.5, burst_scale=0.5, burst_vol=30),
-    "UPRO": Config(margin=0.05, bullish_rsi=85),
-    "WANT": Config(margin=0.07, bullish_rsi=80, bullish_u50=0.5, burst_scale=1.5, burst_vol=35),
-    "WEBL": Config(margin=0.09, bullish_rsi=90, bullish_u50=0.6, burst_scale=1, burst_vol=40),
+    "NAIL": Config(margin=0.08, bullish_rsi=75, bullish_u50=0.4, burst_vol=30, burst_scale=2),
+    "PILL": Config(margin=0.06, bullish_rsi=65, bullish_u50=0.5, burst_vol=25, burst_scale=1),
+    "RETL": Config(margin=0.05, bullish_rsi=60, bullish_u50=0.4, burst_vol=30, burst_scale=0.5),
+    "SOXL": Config(margin=0.09, bullish_rsi=90, bullish_u50=0.6, burst_vol=40, burst_scale=1.5),
+    "SPXL": Config(margin=0.05, bullish_rsi=75, bullish_u50=0.3, burst_vol=45, burst_scale=1.0),
+    "TECL": Config(margin=0.07, bullish_rsi=95, bullish_u50=0.6, burst_vol=30, burst_scale=0.5),
+    "TNA": Config(margin=0.06, bullish_rsi=75, bullish_u50=0.5, burst_vol=45, burst_scale=2),
+    "TQQQ": Config(margin=0.07, bullish_rsi=95, bullish_u50=0.5, burst_vol=25, burst_scale=0.5),
+    "UPRO": Config(margin=0.05, bullish_rsi=75, bullish_u50=0.3, burst_vol=45, burst_scale=1.0),
+    "WANT": Config(margin=0.07, bullish_rsi=75, bullish_u50=0.4, burst_vol=45, burst_scale=0.5),
+    "WEBL": Config(margin=0.06, bullish_rsi=80),
 }
 
 def print_config(config: Config, ticker=""):
