@@ -36,6 +36,7 @@ def compute_avg_ror(results: Dict[int, List[Result]]):
 
     weights: Dict[str, float] = {}
     sorted_dates = sorted(list(date_results.keys()))
+    date_idx = {d: i for i, d in enumerate(sorted_dates)}
 
     for i, start in enumerate(sorted_dates):
         last_cycle_dates = sorted_dates[max(i - CYCLE_DAYS, 0) : i]
@@ -44,12 +45,8 @@ def compute_avg_ror(results: Dict[int, List[Result]]):
         for d in reversed(last_cycle_dates):
             res = date_results[d]
 
-            try:
-                e = sorted_dates.index(res.end)
-            except:
-                e = sys.maxsize
-
-            s = sorted_dates.index(start)
+            e = date_idx.get(res.end, sys.maxsize)
+            s = date_idx.get(start)
 
             end_in_start[d] = int(abs(e - s) <= 1) or end_in_start.get(
                 res.end, 0
