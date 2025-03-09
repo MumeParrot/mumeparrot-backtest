@@ -25,20 +25,48 @@ def compute_fail_rate(results: Dict[int, List[Result]]) -> float:
 
 
 def compute_avg_ror(results: Dict[int, List[Result]]):
+    date_results: Dict[str, Result] = {}
+    for c in range(MAX_CYCLES - 1):
+        for r in results[c]:
+            if r.sold:
+                date_results[r.start] = r
+
+    for r in results[MAX_CYCLES - 1]:
+        date_results[r.start] = r
+
+    weights: Dict[str, float] = {}
+    sorted_dates = sorted(list(date_results.keys()))
+
+    for i, start in enumerate(sorted_dates):
+        last_cycle_dates = sorted_dates[max(i - CYCLE_DAYS, 0) : i]
+
+        end_in_start: Dict[str, int] = {}
+        for d in reversed(last_cycle_dates):
+            res = date_results[d]
+
+            try:
+                e = sorted_dates.index(res.end)
+            except:
+                e = sys.maxsize
+
+            s = sorted_dates.index(start)
+
+            end_in_start[d] = int(abs(e - s) <= 1) or end_in_start.get(
+                res.end, 0
+            )
+
+        weights[start] = (
+            sum(end_in_start.values()) / len(end_in_start)
+            if end_in_start
+            else 0.5
+        )
+
     tot_ror = 0
     tot_days = 0
 
-    for c in range(MAX_CYCLES - 1):
-        tot_ror += sum([r.ror for r in results[c] if r.sold])
-        tot_days += sum([r.days for r in results[c] if r.sold])
-
-    tot_ror += sum([r.ror for r in results[MAX_CYCLES - 1]])
-    tot_days += sum(
-        [
-            r.days if r.sold else MAX_CYCLES * CYCLE_DAYS
-            for r in results[MAX_CYCLES - 1]
-        ]
-    )
+    for s, r in date_results.items():
+        tot_ror += weights[s] * r.ror
+        tot_days += weights[s] * r.days
 
     return tot_ror / tot_days * MARKET_DAYS_PER_YEAR
 

@@ -33,6 +33,7 @@ def get_ticks(dates: List[str], granul: Granul = Granul.Year):
             xticks.append(i)
             xticklabels.append(label)
             last_year = year
+            last_month = month
 
         elif month != last_month:
             if granul == Granul.Month:
