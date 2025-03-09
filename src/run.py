@@ -235,7 +235,7 @@ def simulate(
             rate *= (
                 1
                 + CONFIG.burst_scale
-                * (vol - CONFIG.burst_vol)
+                * (abs(vol) - CONFIG.burst_vol)
                 / CONFIG.burst_vol
             )
 
