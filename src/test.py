@@ -1,5 +1,5 @@
 import sys
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from .const import StockRow, State, Result
 from .data import (
@@ -17,14 +17,9 @@ from .env import CYCLE_DAYS, SEED, MAX_CYCLES, FAIL_PANELTY, FAIL_LIMIT
 MARKET_DAYS_PER_YEAR = 260
 
 
-def compute_fail_rate(results: Dict[int, List[Result]]) -> float:
-    n_total = len(results[0])
-    n_failed = len([r for r in results[MAX_CYCLES - 1] if not r.sold])
-
-    return n_failed / n_total
-
-
-def compute_avg_ror(results: Dict[int, List[Result]]):
+def compute_weighted_results(
+    results: Dict[int, List[Result]],
+) -> Dict[str, Tuple[float, Result]]:
     date_results: Dict[str, Result] = {}
     for c in range(MAX_CYCLES - 1):
         for r in results[c]:
@@ -34,7 +29,7 @@ def compute_avg_ror(results: Dict[int, List[Result]]):
     for r in results[MAX_CYCLES - 1]:
         date_results[r.start] = r
 
-    weights: Dict[str, float] = {}
+    weighted_results: Dict[str, float] = {}
     sorted_dates = sorted(list(date_results.keys()))
     date_idx = {d: i for i, d in enumerate(sorted_dates)}
 
@@ -52,18 +47,37 @@ def compute_avg_ror(results: Dict[int, List[Result]]):
                 res.end, 0
             )
 
-        weights[start] = (
+        weight = (
             sum(end_in_start.values()) / len(end_in_start)
             if end_in_start
             else 0.5
         )
 
+        weighted_results[start] = (weight, date_results[start])
+
+    return weighted_results
+
+
+def compute_fail_rate(results: Dict[int, List[Result]]) -> float:
+    weighted_results = compute_weighted_results(results)
+
+    n_failed = sum([w for w, r in weighted_results.values() if not r.sold])
+    n_total = sum([w for w, _ in weighted_results.values()])
+
+    return n_failed / n_total
+
+
+def compute_avg_ror(results: Dict[int, List[Result]]):
+    weighted_results = compute_weighted_results(results)
+
     tot_ror = 0
     tot_days = 0
 
-    for s, r in date_results.items():
-        tot_ror += weights[s] * r.ror
-        tot_days += weights[s] * r.days
+    for s, wr in weighted_results.items():
+        weight, result = wr
+
+        tot_ror += weight * result.ror
+        tot_days += weight * result.days
 
     return tot_ror / tot_days * MARKET_DAYS_PER_YEAR
 
