@@ -37,6 +37,36 @@ def read_chart(ticker: str, start: str, end: str) -> List[StockRow]:
     return history[sidx:eidx]
 
 
+def read_base_chart(ticker: str, start: str, end: str) -> List[StockRow]:
+    ticker = ticker.upper()
+    if ticker not in TICKERS.values():
+        raise Exception(f"'{ticker}' is not supported")
+
+    with open(f"{CHARTS_PATH}/{ticker}.csv", "r") as fd:
+        reader = list(csv.reader(fd))
+        history = [
+            StockRow(d, float(p), float(cp)) for d, p, _, _, cp, _ in reader[1:]
+        ]
+
+    sidx = 0
+    if start != "":
+        matching = [d.startswith(start) for d, _, _ in history]
+        try:
+            sidx = matching.index(True)
+        except:
+            pass
+
+    eidx = len(history)
+    if end != "":
+        matching = [d.startswith(end) for d, _, _ in history]
+        try:
+            eidx = len(matching) - list(reversed(matching)).index(True)
+        except:
+            pass
+
+    return history[sidx:eidx]
+
+
 def read_sahm() -> Dict[str, float]:
     class MonthlyDict(Dict):
         def __getitem__(self, idx):
