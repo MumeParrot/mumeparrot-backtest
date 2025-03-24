@@ -72,11 +72,15 @@ def plot_chart(ticker: str, start: str, end: str):
 
 def plot_sim(ticker: str, start: str, end: str, history: List[State]):
     dates = [s.date for s in history]
-    # exhausted1 = [
-    #     i for i, s in enumerate(history) if s.status == Status.Exhausted1
-    # ]
-    exhausted2 = [
-        i for i, s in enumerate(history) if s.status == Status.Exhausted
+    exhausted = [
+        i
+        for i, s in enumerate(history)
+        if s.status == Status.Exhausted and s.cycle != 0
+    ]
+    failed = [
+        i
+        for i, s in enumerate(history)
+        if s.status == Status.Exhausted and s.cycle == 0
     ]
     sold = [i for i, s in enumerate(history) if s.status == Status.Sold]
 
@@ -88,10 +92,10 @@ def plot_sim(ticker: str, start: str, end: str, history: List[State]):
 
     ax1.plot([s.close_price for s in history], color="black", label="price")
     ax1.plot([s.avg_price for s in history], color="gray", label="avg_price")
-    # for x in exhausted1:
-    #     ax1.axvline(x, 0, ymax, color="salmon")
-    for x in exhausted2:
+    for x in exhausted:
         ax1.axvline(x, 0, ymax, color="tomato")
+    for x in failed:
+        ax1.axvline(x, 0, ymax, color="red")
     for x in sold:
         ax1.axvline(x, 0, ymax, color="green")
 

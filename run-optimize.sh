@@ -4,7 +4,7 @@ ticker_json=${tickers:-tickers.json}
 date_str=$(date +"%Y-%m-%d")
 max_cycles=${max_cycles:-2}
 rsi_days=${rsi_days:-5}
-results=results-${date_str}-rsi${rsi_days}
+results=results-${date_str}
 
 mkdir -p ${results}
 for ticker in $(jq -r 'keys[]' ${ticker_json}); 
@@ -12,7 +12,7 @@ do
     for i in {1..3}
     do
 	echo "[${i}] Optimizing ${ticker}..."
-	RSI_DAYS=${rsi_days} MAX_CYCLES=${max_cycles} ./optimize.py -t ${ticker} --fixed bearish_rsi:0,min_bearish_rate:1.0,sahm_threshold:1.0 > ${results}/${ticker}-${i}.dat &
+	./optimize.py -t ${ticker} --fixed bearish_rsi:0,min_bearish_rate:1.0,sahm_threshold:1.0 > ${results}/${ticker}-${i}.dat &
     done
 done
 
