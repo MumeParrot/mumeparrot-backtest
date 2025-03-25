@@ -7,15 +7,19 @@ from enum import Enum
 import matplotlib.pyplot as plt
 
 from .const import Status, State
-from .data import read_chart
+from .data import (read_chart,
+        compute_urates
+)
+from .env import CYCLE_DAYS
 
-matplotlib.use("TkAgg")
+# matplotlib.use("TkAgg")
 
 
 class Granul(Enum):
     Month = 0
     Month6 = 1
     Year = 2
+    Year2 = 3 
 
 
 def get_ticks(dates: List[str], granul: Granul = Granul.Year):
@@ -27,9 +31,16 @@ def get_ticks(dates: List[str], granul: Granul = Granul.Year):
     for i, d in enumerate(dates):
         year, month = d.split("-")[0:2]
 
-        label = d[:4] if granul == Granul.Year else d[:7]
+        label = d[:4] if (granul == Granul.Year or granul == Granul.Year2) else d[:7]
+        
+        if granul == Granul.Year2:
+            if year != last_year and int(year) % 2 == 0:        
+                xticks.append(i)
+                xticklabels.append(label)
+                last_year = year
+                last_month = month
 
-        if year != last_year:
+        elif year != last_year:
             xticks.append(i)
             xticklabels.append(label)
             last_year = year
@@ -109,4 +120,45 @@ def plot_sim(ticker: str, start: str, end: str, history: List[State]):
     ax1.legend()
 
     ax1.grid(axis="both")
+    plt.show()
+
+
+def plot_sim_corr(ticker: str, start: str, end: str, history: List[State]):
+    full_chart = read_chart(ticker, "", "")
+
+    next_cycle_ror = []
+    for c_idx, c in enumerate(full_chart[:-CYCLE_DAYS]):
+        next_cycle_ror.append(100*(full_chart[c_idx+CYCLE_DAYS].close_price / c.close_price))
+
+    URATE = compute_urates(full_chart, 50, CYCLE_DAYS)
+    urate_list = list(URATE.values())[:-CYCLE_DAYS]
+
+    dates = [s.date for s in history] 
+
+    fig = plt.figure(figsize=(20, 8))
+    ax1 = fig.add_subplot(121)
+    ax2 = ax1.twinx()
+
+    price_line, = ax1.plot([s.close_price for s in history], color="black", label="price")
+    ax1.set_yscale('log')
+    urate_line, = ax2.plot([URATE[s] for s in URATE], color="gray", label="urate")
+    
+    xticks, xticklabels = get_ticks(dates, granul=Granul.Year2)
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels(xticklabels)
+
+    ax1.set_title(f"{ticker} ({dates[0]} ~ {dates[-1]})")
+    lines = [price_line, urate_line]
+    labels = [line.get_label() for line in lines]
+    ax1.legend(lines, labels, loc='upper right')
+    ax1.grid(axis="both")
+    
+    ax3 = fig.add_subplot(122)
+    ax3.scatter(next_cycle_ror, urate_list, alpha=0.3, edgecolors='none')
+    ax3.set_xscale('log')
+
+    plt.xlabel("Next cycle return (%)")
+    plt.ylabel("Urate computed with 50 days avg.")
+    plt.title(f"{ticker} - Urate vs next cycle return")
+
     plt.show()

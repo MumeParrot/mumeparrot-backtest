@@ -10,7 +10,7 @@ from dataclasses import asdict
 
 from src.test import test
 from src.full import full
-from src.plot import plot_chart, plot_sim
+from src.plot import plot_chart, plot_sim, plot_sim_corr
 
 from src.configs import best_configs, Config
 from src.env import TICKERS
@@ -117,7 +117,20 @@ def main():
 
                 history = full(ticker, config, start, end)
                 plot_sim(ticker, start, end, history)
-
+            
+            elif mode.startswith("c"):
+                ticker = get_arg("ticker", tpe=str, default="all")
+                config: str = get_arg("config", tpe=str, default="best")
+                
+                config = copy.deepcopy(best_configs[ticker])
+                for k, v in config_fields.items():
+                    if v is not None:
+                        setattr(config, k, v)
+                
+                print(ticker)
+                history = full(ticker, config, start, end)
+                plot_sim_corr(ticker, start, end, history)
+               
         except RuntimeError:
             continue
 
