@@ -121,7 +121,8 @@ def main():
             elif mode.startswith("c"):
                 ticker = get_arg("ticker", tpe=str, default="all")
                 config: str = get_arg("config", tpe=str, default="best")
-                
+                var_corr: str = get_arg("var_corr", tpe=str, default="urate")
+                                
                 config = copy.deepcopy(best_configs[ticker])
                 for k, v in config_fields.items():
                     if v is not None:
@@ -129,8 +130,9 @@ def main():
                 
                 print(ticker)
                 history = full(ticker, config, start, end)
-                plot_sim_corr(ticker, start, end, history)
-               
+                plot_sim_corr(ticker, start, end, history, var_corr)
+        
+
         except RuntimeError:
             continue
 
