@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 from .const import Status, State
 from .data import (read_chart,
-        compute_urates
+        compute_urates,
+        compute_quad_var
 )
 from .env import CYCLE_DAYS
 
@@ -132,11 +133,14 @@ def plot_sim_corr(ticker: str, start: str, end: str, history: List[State], param
         next_cycle_ror.append(100*(full_chart[c_idx+CYCLE_DAYS].close_price / c.close_price))
     
     if param == 'urate':
-        print('param urate')
         param_data = compute_urates(full_chart, 50, CYCLE_DAYS)
         param_data_list = list(param_data.values())[:-CYCLE_DAYS]
-        
         plt_ylabel = 'Urate computed with 50 days avg.'
+
+    elif param == 'quad':
+        param_data = compute_quad_var(full_chart, 50, CYCLE_DAYS) 
+        param_data_list = list(param_data.values())[:-CYCLE_DAYS]
+        plt_ylabel = 'Quadratic variation'
 
     dates = [s.date for s in history] 
 
@@ -160,7 +164,8 @@ def plot_sim_corr(ticker: str, start: str, end: str, history: List[State], param
     
     ax3 = fig.add_subplot(122)
     ax3.scatter(next_cycle_ror, param_data_list, alpha=0.3, edgecolors='none')
-    ax3.set_xscale('log')
+    if param == 'urate':
+        ax3.set_xscale('log')
 
     plt.xlabel("Next cycle return (%) (log scale)")
     plt.ylabel(plt_ylabel)

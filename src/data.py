@@ -1,4 +1,5 @@
 import csv
+import math
 
 from typing import List, Dict
 
@@ -158,3 +159,25 @@ def compute_urates(chart: List[StockRow], avg: int, term: int):
         u_rates[c.date] = sum(u_counters) / len(u_counters)
 
     return u_rates
+
+
+def compute_quad_var(chart: List[StockRow], avg: int, term: int): 
+    avg_quad_vars = {}
+
+    quad_vars = []
+    for i, (date, p, cp) in enumerate(chart):
+        if i == 0:
+            prev_cp = cp
+            avg_quad_vars[date] = 0.0
+            continue
+
+        quad_vars += [(math.log10(cp) - math.log10(prev_cp))**2]
+        if len(quad_vars) > term:
+            quad_vars.pop(0)
+        avg_quad_vars[date] = sum(quad_vars) / len(quad_vars) if quad_vars else 0.0
+        prev_cp = cp
+   
+    return avg_quad_vars
+
+
+        

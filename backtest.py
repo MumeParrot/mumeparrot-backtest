@@ -122,6 +122,7 @@ def main():
                 ticker = get_arg("ticker", tpe=str, default="all")
                 config: str = get_arg("config", tpe=str, default="best")
                 var_corr: str = get_arg("var_corr", tpe=str, default="urate")
+                # supported variables: urate, quad
                                 
                 config = copy.deepcopy(best_configs[ticker])
                 for k, v in config_fields.items():
