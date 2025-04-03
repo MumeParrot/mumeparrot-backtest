@@ -57,7 +57,7 @@ def oneday(
         else:
             assert s.status != Status.Sold
 
-            if new_s.cycle_left():  # cycles left
+            if new_s.cycle_left():  # cycles left # TODO: consider RSI?
                 sell_qty = int(max(s.stock_qty / 4, s.stock_qty * urate))
                 new_s.sell(qty=sell_qty, sell_price=c.close_price)
 

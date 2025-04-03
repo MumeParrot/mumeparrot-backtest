@@ -58,7 +58,7 @@ best_configs = {
     "SPXL": Config(margin=0.06, bullish_rsi=85, bullish_u50=0.5, burst_scale=2.5, burst_vol=25),
     "CURE": Config(margin=0.05, bullish_rsi=85, bullish_u50=0.4, burst_scale=1.5, burst_vol=25),
     "DFEN": Config(margin=0.06, bullish_rsi=85, bullish_u50=0.5, burst_scale=1.0, burst_vol=45),
-    "FNGU": Config(margin=0.07, bullish_rsi=90, bullish_u50=0.4, burst_scale=2.0, burst_vol=25),
+    "FNGA": Config(margin=0.07, bullish_rsi=90, bullish_u50=0.4, burst_scale=2.0, burst_vol=25),
     "FAS":  Config(margin=0.07, bullish_rsi=90, bullish_u50=0.5, burst_scale=2.5, burst_vol=45),
     "HIBL": Config(margin=0.05, bullish_rsi=65, bullish_u50=0.5, burst_scale=2.0, burst_vol=25),
     "LABU": Config(margin=0.10, bullish_rsi=80, bullish_u50=0.3, burst_scale=2.0, burst_vol=40),
