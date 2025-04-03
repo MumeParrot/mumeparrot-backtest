@@ -5,8 +5,12 @@ from dataclasses import dataclass, astuple
 from datetime import datetime
 
 
+class SeedExhausted(Exception):
+    pass
+
+
 class Status(Enum):
-    Selling = 0
+    Buying = 0
     Sold = 1
     Exhausted = 2
 
@@ -59,7 +63,7 @@ class State:
             invested_seed=0,
             remaining_seed=seed,
             stock_qty=0,
-            status=Status.Selling,
+            status=Status.Buying,
             cycle=0,
             max_cycle=max_cycle,
         )
@@ -110,7 +114,7 @@ class State:
         self.remaining_seed -= qty * buy_price
 
         self.stock_qty += qty
-        self.status = Status.Selling
+        self.status = Status.Buying
 
     def complete(self):
         self.avg_price = (

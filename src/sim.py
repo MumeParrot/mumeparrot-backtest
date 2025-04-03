@@ -1,7 +1,7 @@
 from typing import Dict
 
 from .configs import Config
-from .const import StockRow, State, Status
+from .const import SeedExhausted, StockRow, State, Status
 
 
 def oneday(
@@ -27,6 +27,9 @@ def oneday(
     else:
         dqtyD = float(daily_seed / c.close_price)
         rate = float(1)
+
+        if dqtyD < 1:
+            raise SeedExhausted
 
         if rsi > config.bullish_rsi:
             rate = 0
