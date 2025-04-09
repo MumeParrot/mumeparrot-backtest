@@ -8,7 +8,6 @@ def oneday(
     c: StockRow,
     s: State,
     config: Config,
-    CYCLE_DAYS: int,
     RSI: Dict[str, float],
     VOLATILITY: Dict[str, float],
     URATE: Dict[str, float],
@@ -18,7 +17,7 @@ def oneday(
     vol = VOLATILITY[c.date]
     urate = URATE[c.date]
 
-    daily_seed: float = s.seed / CYCLE_DAYS
+    daily_seed: float = s.seed / config.term
     new_s = State.from_(s, c)
 
     if s.stock_qty > 0 and c.close_price > s.avg_price * (1 + margin):

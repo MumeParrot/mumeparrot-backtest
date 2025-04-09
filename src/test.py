@@ -16,6 +16,9 @@ from .env import CYCLE_DAYS, SEED, MAX_CYCLES, FAIL_PANELTY, FAIL_LIMIT
 
 MARKET_DAYS_PER_YEAR = 260
 
+NUM_SIMULATED = 0
+NUM_RETIRED = 0
+
 
 def compute_weighted_results(
     results: Dict[int, List[Result]],
@@ -90,17 +93,25 @@ def simulate(
     RSI: Dict[str, float],
     VOLATILITY: Dict[str, float],
 ) -> List[State]:
+    global NUM_SIMULATED, NUM_RETIRED
 
     s: State = State.init(SEED, max_cycle)
     s.complete()
 
     history: List[State] = []
     for c in chart:
-        s = oneday(c, s, config, CYCLE_DAYS, RSI, VOLATILITY, URATE)
+        s = oneday(c, s, config, RSI, VOLATILITY, URATE)
         history.append(s)
 
         if s.status.is_sold():
             break
+
+        elif s.status.is_exhausted() and s.cycle_done():
+            break
+
+    NUM_SIMULATED += 1
+    if not s.status.is_sold() and not s.status.is_exhausted():
+        NUM_RETIRED += 1
 
     return history
 
@@ -111,6 +122,9 @@ def test(
     start: str,
     end: str,
 ) -> float:
+    global NUM_SIMULATED, NUM_RETIRED
+    NUM_SIMULATED = 0
+    NUM_RETIRED = 0
 
     full_chart = read_chart(ticker, "", "")
     chart = read_chart(ticker, start, end)
@@ -180,6 +194,11 @@ def test(
     print(
         f"{ticker}: {config} | {score:.2f} ({avg_ror_per_year * 100:.1f}%, {fail_rate * 100:.1f}%)"
     )
+
+    if NUM_RETIRED > 0.05 * NUM_SIMULATED:
+        print(
+            f"[warning] {NUM_RETIRED / NUM_SIMULATED * 100:.1f}% simulations retired"
+        )
 
     sys.stdout.flush()
     return score

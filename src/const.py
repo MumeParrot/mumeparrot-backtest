@@ -34,6 +34,7 @@ class StockRow:
 @dataclass
 class State:
     date: str
+    elapsed: int
     principal: float
     price: float
     close_price: float
@@ -56,6 +57,7 @@ class State:
     def init(cls, seed: float, max_cycle: int) -> "State":
         return State(
             date=None,
+            elapsed=0,
             principal=seed,
             price=None,
             close_price=None,
@@ -73,6 +75,7 @@ class State:
         new_s = deepcopy(s)
 
         new_s.date = c.date
+        new_s.elapsed += 1
         new_s.price = c.price
         new_s.close_price = c.close_price
 
@@ -85,7 +88,7 @@ class State:
         return (
             f"[{self.date}] "
             + f"seed={self.seed:.0f}({self.invested_seed:.0f}+{self.remaining_seed:.0f}) "
-            + f"eval={self.stock_evl:.2f}({self.stock_qty}*{self.close_price:.2f}) "
+            + f"eval={self.stock_qty * self.close_price:.2f}({self.stock_qty}*{self.close_price:.2f}) "
             + f"ror={self.ror * 100:.1f}% "
             + f"({self.status.name})"
         )
@@ -95,6 +98,9 @@ class State:
 
     def cycle_left(self):
         return self.cycle < self.max_cycle
+
+    def cycle_done(self):
+        return self.cycle > self.max_cycle
 
     def sell(self, qty: int, sell_price: float, sold: bool = False):
         all_cycle_used = not sold and self.cycle == self.max_cycle

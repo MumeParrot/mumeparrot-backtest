@@ -26,7 +26,7 @@ def full(
     chart = read_chart(ticker, start, end)
     base_chart = read_base_chart(base_ticker, start, end)
 
-    URATE = compute_urates(full_chart, 50, CYCLE_DAYS)
+    URATE = compute_urates(full_chart, 50, config.term)
     RSI = compute_rsi(full_chart, 5)
     VOLATILITY = compute_volatility(full_chart, 5)
 
@@ -36,7 +36,7 @@ def full(
     history: List[State] = []
     for c in chart:
         try:
-            s = oneday(c, s, config, CYCLE_DAYS, RSI, VOLATILITY, URATE)
+            s = oneday(c, s, config, RSI, VOLATILITY, URATE)
             history.append(s)
         except SeedExhausted:
             print(f"[{ticker}] Seed exhausted on {s.date}")
