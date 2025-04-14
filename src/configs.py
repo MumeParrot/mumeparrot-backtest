@@ -4,6 +4,7 @@ from dataclasses import dataclass, asdict
 
 @dataclass
 class Bounds:
+    term: Tuple[int] = (40, 40)
     margin: Tuple[float] = (0.05, 0.15)
     bullish_rsi: Tuple[int] = (60, 100)
     bearish_rsi: Tuple[int] = (0, 40)
@@ -16,6 +17,7 @@ class Bounds:
 
 @dataclass
 class Precisions:
+    term: int = 1
     margin: float = 0.01
     bullish_rsi: int = 5
     bearish_rsi: int = 5
