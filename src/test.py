@@ -1,7 +1,8 @@
 import sys
+from statistics import mean
 from typing import List, Dict, Tuple
 
-from .const import StockRow, State, Result
+from .const import StockRow, State, Result, History
 from .data import (
     read_chart,
     compute_urates,
@@ -12,7 +13,7 @@ from .data import (
 from .configs import Config
 
 from .sim import oneday
-from .env import CYCLE_DAYS, SEED, MAX_CYCLES, FAIL_PANELTY, FAIL_LIMIT
+from .env import VERBOSE, CYCLE_DAYS, SEED, MAX_CYCLES, FAIL_PANELTY, FAIL_LIMIT
 
 MARKET_DAYS_PER_YEAR = 260
 
@@ -67,7 +68,13 @@ def compute_fail_rate(results: Dict[int, List[Result]]) -> float:
     n_failed = sum([w for w, r in weighted_results.values() if not r.sold])
     n_total = sum([w for w, _ in weighted_results.values()])
 
-    return n_failed / n_total
+    failed_rors = []
+    for rs in results.values():
+        failed_rors += [r.ror for r in rs if r.sold and r.ror < 0]
+    failed_rors += [r.ror for r in results[MAX_CYCLES - 1] if r.ror < 0]
+    failed_rors = failed_rors or [0]
+
+    return n_failed / n_total, mean(failed_rors)
 
 
 def compute_avg_ror(results: Dict[int, List[Result]]):
@@ -92,13 +99,13 @@ def simulate(
     URATE: Dict[str, float],
     RSI: Dict[str, float],
     VOLATILITY: Dict[str, float],
-) -> List[State]:
+) -> History:
     global NUM_SIMULATED, NUM_RETIRED
 
     s: State = State.init(SEED, max_cycle)
     s.complete()
 
-    history: List[State] = []
+    history: History = History()
     for c in chart:
         s = oneday(c, s, config, RSI, VOLATILITY, URATE)
         history.append(s)
@@ -121,7 +128,7 @@ def test(
     config: Config,
     start: str,
     end: str,
-) -> float:
+) -> Tuple[Dict[int, List[Result]], Dict[int, List[History]], float]:
     global NUM_SIMULATED, NUM_RETIRED
     NUM_SIMULATED = 0
     NUM_RETIRED = 0
@@ -139,7 +146,7 @@ def test(
 
     _charts = charts
 
-    histories: Dict[int, List[State]] = {}
+    histories: Dict[int, List[History]] = {}
     results: Dict[int, List[Result]] = {}
 
     for cycle in range(MAX_CYCLES):
@@ -182,7 +189,7 @@ def test(
 
                 _charts.append(extended_chart)
 
-    fail_rate = compute_fail_rate(results)
+    fail_rate, mean_failed_ror = compute_fail_rate(results)
     avg_ror_per_year = compute_avg_ror(results)
 
     score = (
@@ -195,10 +202,10 @@ def test(
         f"{ticker}: {config} | {score:.2f} ({avg_ror_per_year * 100:.1f}%, {fail_rate * 100:.1f}%)"
     )
 
-    if NUM_RETIRED > 0.05 * NUM_SIMULATED:
+    if VERBOSE and NUM_RETIRED > 0.05 * NUM_SIMULATED:
         print(
             f"[warning] {NUM_RETIRED / NUM_SIMULATED * 100:.1f}% simulations retired"
         )
 
     sys.stdout.flush()
-    return score
+    return results, histories, score

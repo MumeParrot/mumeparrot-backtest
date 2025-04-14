@@ -1,3 +1,4 @@
+from typing import List
 from copy import deepcopy
 from enum import Enum
 from dataclasses import dataclass, astuple
@@ -86,7 +87,7 @@ class State:
             return ""
 
         return (
-            f"[{self.date}] "
+            f"[{self.date} ({self.elapsed:02})] [{self.cycle}] "
             + f"seed={self.seed:.0f}({self.invested_seed:.0f}+{self.remaining_seed:.0f}) "
             + f"eval={self.stock_qty * self.close_price:.2f}({self.stock_qty}*{self.close_price:.2f}) "
             + f"ror={self.ror * 100:.1f}% "
@@ -100,7 +101,8 @@ class State:
         return self.cycle < self.max_cycle
 
     def cycle_done(self):
-        return self.cycle > self.max_cycle
+        # self.cycle roll back to 0 when all cycles are used
+        return self.cycle == 0
 
     def sell(self, qty: int, sell_price: float, sold: bool = False):
         all_cycle_used = not sold and self.cycle == self.max_cycle
@@ -130,6 +132,16 @@ class State:
             self.stock_qty * self.close_price if self.stock_qty > 0 else 0
         )
         self.ror = (self.remaining_seed + self.stock_eval) / self.principal - 1
+
+
+class History(List[State]):
+    def append(self, s: State):
+        assert isinstance(s, State)
+
+        super().append(s)
+
+    def __str__(self):
+        return "\n".join(str(s) for s in self)
 
 
 @dataclass

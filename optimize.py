@@ -73,7 +73,8 @@ def optimize(mode, directory, ticker, fixed):
             p = getattr(_precisions, k)
             _config[k] = int(v / p) * p
 
-        return -test(ticker, Config(**_config), start, end)
+        _, _, score = test(ticker, Config(**_config), start, end)
+        return -score
 
     opt = differential_evolution(_test, bounds=bounds)
     print(f"Result: {opt.fun}, Best args: {opt.x}")
