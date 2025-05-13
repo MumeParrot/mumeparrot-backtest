@@ -12,8 +12,8 @@ from src.test import test
 from src.full import full
 from src.plot import plot_chart, plot_sim
 
-from src.configs import best_configs, Config
-from src.env import TICKERS
+from src.configs import Config
+from src.env import TICKERS, BEST_CONFIGS
 
 stop = [False]
 
@@ -84,7 +84,7 @@ def main():
                         )
 
                 if ticker != "all":
-                    config = copy.deepcopy(best_configs[ticker])
+                    config = copy.deepcopy(BEST_CONFIGS[ticker])
                     for k, v in config_fields.items():
                         if v is not None:
                             setattr(config, k, v)
@@ -93,7 +93,7 @@ def main():
 
                 else:
                     for ticker in TICKERS.keys():
-                        config = copy.deepcopy(best_configs[ticker])
+                        config = copy.deepcopy(BEST_CONFIGS[ticker])
                         for k, v in config_fields.items():
                             if v is not None:
                                 setattr(config, k, v)
@@ -110,7 +110,7 @@ def main():
                             field, tpe=type(value), default=None
                         )
 
-                config = copy.deepcopy(best_configs[ticker])
+                config = copy.deepcopy(BEST_CONFIGS[ticker])
                 for k, v in config_fields.items():
                     if v is not None:
                         setattr(config, k, v)

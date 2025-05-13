@@ -1,0 +1,20 @@
+{
+    "UPRO": { "margin": 0.06, "bullish_rsi": 85, "bullish_u50": 0.5, "burst_scale": 2.5, "burst_vol": 25 },
+    "SPXL": { "margin": 0.06, "bullish_rsi": 85, "bullish_u50": 0.5, "burst_scale": 2.5, "burst_vol": 25 },
+    "CURE": { "margin": 0.05, "bullish_rsi": 85, "bullish_u50": 0.4, "burst_scale": 1.5, "burst_vol": 25 },
+    "DFEN": { "margin": 0.06, "bullish_rsi": 85, "bullish_u50": 0.5, "burst_scale": 1.0, "burst_vol": 45 },
+    "FNGA": { "margin": 0.07, "bullish_rsi": 90, "bullish_u50": 0.4, "burst_scale": 2.0, "burst_vol": 25 },
+    "FAS": { "margin": 0.07, "bullish_rsi": 90, "bullish_u50": 0.5, "burst_scale": 2.5, "burst_vol": 45 },
+    "HIBL": { "margin": 0.05, "bullish_rsi": 65, "bullish_u50": 0.5, "burst_scale": 2.0, "burst_vol": 25 },
+    "LABU": { "margin": 0.10, "bullish_rsi": 80, "bullish_u50": 0.3, "burst_scale": 2.0, "burst_vol": 40 },
+    "MIDU": { "margin": 0.05, "bullish_rsi": 90, "bullish_u50": 0.5, "burst_scale": 1.0, "burst_vol": 25 },
+    "NAIL": { "margin": 0.08, "bullish_rsi": 85, "bullish_u50": 0.6, "burst_scale": 2.5, "burst_vol": 25 },
+    "PILL": { "margin": 0.05, "bullish_rsi": 95, "bullish_u50": 0.3, "burst_scale": 2.5, "burst_vol": 30 },
+    "RETL": { "margin": 0.05, "bullish_rsi": 70, "bullish_u50": 0.6, "burst_scale": 2.5, "burst_vol": 30 },
+    "SOXL": { "margin": 0.08, "bullish_rsi": 85, "bullish_u50": 0.7, "burst_scale": 1.0, "burst_vol": 25 },
+    "TECL": { "margin": 0.05, "bullish_rsi": 90, "bullish_u50": 0.6, "burst_scale": 0.5, "burst_vol": 25 },
+    "TNA": { "margin": 0.06, "bullish_rsi": 75, "bullish_u50": 0.4, "burst_scale": 2.0, "burst_vol": 25 },
+    "WANT": { "margin": 0.06, "bullish_rsi": 65, "bullish_u50": 0.4, "burst_scale": 2.5, "burst_vol": 25 },
+    "WEBL": { "margin": 0.06, "bullish_rsi": 90, "bullish_u50": 0.7, "burst_scale": 2.5, "burst_vol": 35 },
+    "TQQQ": { "margin": 0.06, "bullish_rsi": 95, "bullish_u50": 0.4, "burst_scale": 1.0, "burst_vol": 25 }
+}
