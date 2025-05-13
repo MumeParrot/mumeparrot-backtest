@@ -6,9 +6,10 @@ TICKER_FILE = os.environ.get("TICKER_FILE", "tickers.json")
 with open(TICKER_FILE, "r") as fd:
     TICKERS = json.loads(fd.read())
 
+DEBUG: bool = bool(int(os.environ.get("DEBUG", 0)))
 VERBOSE: bool = bool(int(os.environ.get("VERBOSE", 0)))
 
-CYCLE_DAYS: int = int(os.environ.get("CYCLE_DAYS", 80))
+CYCLE_DAYS: int = int(os.environ.get("CYCLE_DAYS", 60))
 SEED: int = int(os.environ.get("SEED", 1000000))
 MAX_CYCLES: int = int(os.environ.get("MAX_CYCLES", 2))
 

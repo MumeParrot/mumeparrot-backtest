@@ -86,13 +86,29 @@ class State:
         if not self.date:
             return ""
 
-        return (
-            f"[{self.date} ({self.elapsed:02})] [{self.cycle}] "
-            + f"seed={self.seed:.0f}({self.invested_seed:.0f}+{self.remaining_seed:.0f}) "
-            + f"eval={self.stock_qty * self.close_price:.2f}({self.stock_qty}*{self.close_price:.2f}) "
-            + f"ror={self.ror * 100:.1f}% "
-            + f"({self.status.name})"
+        price = (
+            (self.close_price - self.avg_price) / self.avg_price
+            if self.avg_price
+            else 0
         )
+
+        s = ""
+        pfx = (
+            f"[{self.date} ({self.elapsed:02})] [{self.cycle}] "
+            + f"seed={self.seed:>6.0f}({self.invested_seed:.0f}+{self.remaining_seed:.0f}) "
+        )
+        s = f"{pfx:<51}"
+
+        pfx = f"eval={self.stock_qty * self.close_price:.2f}({self.stock_qty}*{self.close_price:.2f}) "
+        s += f"{pfx:<32}"
+
+        pfx = f"price={price * 100:.1f}%({self.close_price:.1f}/{self.avg_price:.1f}) "
+        s += f"{pfx:<26}"
+
+        pfx = f"ror={self.ror * 100:.1f}% [{self.status.name}]"
+        s += f"{pfx:<25}"
+
+        return s
 
     def __iter__(self):
         return iter(astuple(self))

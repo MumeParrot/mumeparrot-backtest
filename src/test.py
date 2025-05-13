@@ -13,7 +13,15 @@ from .data import (
 from .configs import Config
 
 from .sim import oneday
-from .env import VERBOSE, CYCLE_DAYS, SEED, MAX_CYCLES, FAIL_PANELTY, FAIL_LIMIT
+from .env import (
+    DEBUG,
+    VERBOSE,
+    CYCLE_DAYS,
+    SEED,
+    MAX_CYCLES,
+    FAIL_PANELTY,
+    FAIL_LIMIT,
+)
 
 MARKET_DAYS_PER_YEAR = 260
 
@@ -102,6 +110,11 @@ def simulate(
 ) -> History:
     global NUM_SIMULATED, NUM_RETIRED
 
+    if DEBUG:
+        fd = open(f"logs/test/{chart[0].date}-{max_cycle}.log", "w")
+    elif VERBOSE:
+        fd = sys.stdout
+
     s: State = State.init(SEED, max_cycle)
     s.complete()
 
@@ -109,6 +122,14 @@ def simulate(
     for c in chart:
         s = oneday(c, s, config, RSI, VOLATILITY, URATE)
         history.append(s)
+
+        if DEBUG or VERBOSE:
+            print(
+                str(s)
+                + " ||| "
+                + f"rsi={RSI[c.date]:>2.0f}, urate={URATE[c.date] * 100:>2.0f}%, vol={VOLATILITY[c.date]:.0f}%",
+                file=fd,
+            )
 
         if s.status.is_sold():
             break
@@ -119,6 +140,9 @@ def simulate(
     NUM_SIMULATED += 1
     if not s.status.is_sold() and not s.status.is_exhausted():
         NUM_RETIRED += 1
+
+    if DEBUG:
+        fd.close()
 
     return history
 
