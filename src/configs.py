@@ -12,6 +12,7 @@ class Bounds:
     bullish_u50: Tuple[float] = (0.3, 0.8)
     burst_scale: Tuple[float] = (0.0, 3.0)
     burst_vol: Tuple[int] = (25, 50)
+    sell_base: Tuple[float] = (0, 0.5)
     sahm_threshold: Tuple[float] = (1.0, 1.0)
 
 
@@ -25,6 +26,7 @@ class Precisions:
     bullish_u50: float = 0.1
     burst_scale: float = 0.5
     burst_vol: int = 5
+    sell_base: float = 0.1
     sahm_threshold: float = 0.5
 
 
@@ -38,6 +40,7 @@ class Config:
     bullish_u50: float = 0.5
     burst_scale: float = 0.0
     burst_vol: int = 30
+    sell_base: float = 0
     sahm_threshold: float = 1.0
 
     def __hash__(self):

@@ -76,13 +76,7 @@ def compute_fail_rate(results: Dict[int, List[Result]]) -> float:
     n_failed = sum([w for w, r in weighted_results.values() if not r.sold])
     n_total = sum([w for w, _ in weighted_results.values()])
 
-    failed_rors = []
-    for rs in results.values():
-        failed_rors += [r.ror for r in rs if r.sold and r.ror < 0]
-    failed_rors += [r.ror for r in results[MAX_CYCLES - 1] if r.ror < 0]
-    failed_rors = failed_rors or [0]
-
-    return n_failed / n_total, mean(failed_rors)
+    return n_failed / n_total
 
 
 def compute_avg_ror(results: Dict[int, List[Result]]):
@@ -127,7 +121,7 @@ def simulate(
             print(
                 str(s)
                 + " ||| "
-                + f"rsi={RSI[c.date]:>2.0f}, urate={URATE[c.date] * 100:>2.0f}%, vol={VOLATILITY[c.date]:.0f}%",
+                + f"rsi={RSI[c.date]:>2.0f}, urate={URATE[c.date] * 100:>2.0f}%, vol={VOLATILITY[c.date]:.0f}",
                 file=fd,
             )
 
@@ -213,7 +207,7 @@ def test(
 
                 _charts.append(extended_chart)
 
-    fail_rate, mean_failed_ror = compute_fail_rate(results)
+    fail_rate = compute_fail_rate(results)
     avg_ror_per_year = compute_avg_ror(results)
 
     score = (
