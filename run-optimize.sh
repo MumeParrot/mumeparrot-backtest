@@ -12,7 +12,7 @@ do
     for i in {1..3}
     do
 	echo "[${i}] Optimizing ${ticker}..."
-	./optimize.py -t ${ticker} --fixed term:40,bearish_rsi:0,min_bearish_rate:1.0,sahm_threshold:1.0 > ${results}/${ticker}-${i}.dat &
+	./optimize.py -t ${ticker} --fixed term:40,sahm_threshold:1.0 > ${results}/${ticker}-${i}.dat &
     done
 done
 

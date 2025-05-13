@@ -24,4 +24,4 @@ SEED: int = int(os.environ.get("SEED", 1000000))
 MAX_CYCLES: int = int(os.environ.get("MAX_CYCLES", 2))
 
 FAIL_PANELTY: int = int(os.environ.get("FAIL_PENALTY", 2))
-FAIL_LIMIT: float = float(os.environ.get("FAIL_LIMIT", 0.05))
+FAIL_LIMIT: float = float(os.environ.get("FAIL_LIMIT", 0.1))
