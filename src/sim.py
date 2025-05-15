@@ -1,14 +1,13 @@
 from typing import Dict
 
 from .configs import Config
-from .const import StockRow, State, Status
+from .const import SeedExhausted, StockRow, State, Status
 
 
 def oneday(
     c: StockRow,
     s: State,
     config: Config,
-    CYCLE_DAYS: int,
     RSI: Dict[str, float],
     VOLATILITY: Dict[str, float],
     URATE: Dict[str, float],
@@ -18,7 +17,7 @@ def oneday(
     vol = VOLATILITY[c.date]
     urate = URATE[c.date]
 
-    daily_seed: float = s.seed / CYCLE_DAYS
+    daily_seed: float = s.seed / config.term
     new_s = State.from_(s, c)
 
     if s.stock_qty > 0 and c.close_price > s.avg_price * (1 + margin):
@@ -27,6 +26,9 @@ def oneday(
     else:
         dqtyD = float(daily_seed / c.close_price)
         rate = float(1)
+
+        if dqtyD < 1:
+            raise SeedExhausted
 
         if rsi > config.bullish_rsi:
             rate = 0
@@ -54,8 +56,13 @@ def oneday(
         else:
             assert s.status != Status.Sold
 
-            if new_s.cycle_left():  # cycles left
-                sell_qty = int(max(s.stock_qty / 4, s.stock_qty * urate))
+            if new_s.cycle_left():  # cycles left # TODO: consider RSI?
+                rate = max(
+                    0.125,  # 1/8
+                    config.sell_base + (1 - config.sell_base) * (1 - urate),
+                )
+
+                sell_qty = int(s.stock_qty * rate)
                 new_s.sell(qty=sell_qty, sell_price=c.close_price)
 
             else:  # exhausted

@@ -1,3 +1,4 @@
+from typing import List
 from copy import deepcopy
 from enum import Enum
 from dataclasses import dataclass, astuple
@@ -5,8 +6,12 @@ from dataclasses import dataclass, astuple
 from datetime import datetime
 
 
+class SeedExhausted(Exception):
+    pass
+
+
 class Status(Enum):
-    Selling = 0
+    Buying = 0
     Sold = 1
     Exhausted = 2
 
@@ -30,6 +35,7 @@ class StockRow:
 @dataclass
 class State:
     date: str
+    elapsed: int
     principal: float
     price: float
     close_price: float
@@ -52,6 +58,7 @@ class State:
     def init(cls, seed: float, max_cycle: int) -> "State":
         return State(
             date=None,
+            elapsed=0,
             principal=seed,
             price=None,
             close_price=None,
@@ -59,7 +66,7 @@ class State:
             invested_seed=0,
             remaining_seed=seed,
             stock_qty=0,
-            status=Status.Selling,
+            status=Status.Buying,
             cycle=0,
             max_cycle=max_cycle,
         )
@@ -69,6 +76,7 @@ class State:
         new_s = deepcopy(s)
 
         new_s.date = c.date
+        new_s.elapsed += 1
         new_s.price = c.price
         new_s.close_price = c.close_price
 
@@ -78,19 +86,39 @@ class State:
         if not self.date:
             return ""
 
-        return (
-            f"[{self.date}] "
-            + f"seed={self.seed:.0f}({self.invested_seed:.0f}+{self.remaining_seed:.0f}) "
-            + f"eval={self.stock_evl:.2f}({self.stock_qty}*{self.close_price:.2f}) "
-            + f"ror={self.ror * 100:.1f}% "
-            + f"({self.status.name})"
+        price = (
+            (self.close_price - self.avg_price) / self.avg_price
+            if self.avg_price
+            else 0
         )
+
+        s = ""
+        pfx = (
+            f"[{self.date} ({self.elapsed:02})] [{self.cycle}] "
+            + f"seed={self.seed:>6.0f}({self.invested_seed:.0f}+{self.remaining_seed:.0f}) "
+        )
+        s = f"{pfx:<51}"
+
+        pfx = f"eval={self.stock_qty * self.close_price:.2f}({self.stock_qty}*{self.close_price:.2f}) "
+        s += f"{pfx:<32}"
+
+        pfx = f"price={price * 100:.1f}%({self.close_price:.1f}/{self.avg_price:.1f}) "
+        s += f"{pfx:<26}"
+
+        pfx = f"ror={self.ror * 100:.1f}% [{self.status.name}]"
+        s += f"{pfx:<25}"
+
+        return s
 
     def __iter__(self):
         return iter(astuple(self))
 
     def cycle_left(self):
         return self.cycle < self.max_cycle
+
+    def cycle_done(self):
+        # self.cycle roll back to 0 when all cycles are used
+        return self.cycle == 0
 
     def sell(self, qty: int, sell_price: float, sold: bool = False):
         all_cycle_used = not sold and self.cycle == self.max_cycle
@@ -110,7 +138,7 @@ class State:
         self.remaining_seed -= qty * buy_price
 
         self.stock_qty += qty
-        self.status = Status.Selling
+        self.status = Status.Buying
 
     def complete(self):
         self.avg_price = (
@@ -120,6 +148,16 @@ class State:
             self.stock_qty * self.close_price if self.stock_qty > 0 else 0
         )
         self.ror = (self.remaining_seed + self.stock_eval) / self.principal - 1
+
+
+class History(List[State]):
+    def append(self, s: State):
+        assert isinstance(s, State)
+
+        super().append(s)
+
+    def __str__(self):
+        return "\n".join(str(s) for s in self)
 
 
 @dataclass

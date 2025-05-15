@@ -1,7 +1,8 @@
 import sys
+from statistics import mean
 from typing import List, Dict, Tuple
 
-from .const import StockRow, State, Result
+from .const import StockRow, State, Result, History
 from .data import (
     read_chart,
     compute_urates,
@@ -12,9 +13,20 @@ from .data import (
 from .configs import Config
 
 from .sim import oneday
-from .env import CYCLE_DAYS, SEED, MAX_CYCLES, FAIL_PANELTY, FAIL_LIMIT
+from .env import (
+    DEBUG,
+    VERBOSE,
+    CYCLE_DAYS,
+    SEED,
+    MAX_CYCLES,
+    FAIL_PANELTY,
+    FAIL_LIMIT,
+)
 
 MARKET_DAYS_PER_YEAR = 260
+
+NUM_SIMULATED = 0
+NUM_RETIRED = 0
 
 
 def compute_weighted_results(
@@ -89,18 +101,42 @@ def simulate(
     URATE: Dict[str, float],
     RSI: Dict[str, float],
     VOLATILITY: Dict[str, float],
-) -> List[State]:
+) -> History:
+    global NUM_SIMULATED, NUM_RETIRED
+
+    if DEBUG:
+        fd = open(f"logs/test/{chart[0].date}-{max_cycle}.log", "w")
+    elif VERBOSE:
+        fd = sys.stdout
 
     s: State = State.init(SEED, max_cycle)
     s.complete()
 
-    history: List[State] = []
+    history: History = History()
     for c in chart:
-        s = oneday(c, s, config, CYCLE_DAYS, RSI, VOLATILITY, URATE)
+        s = oneday(c, s, config, RSI, VOLATILITY, URATE)
         history.append(s)
+
+        if DEBUG or VERBOSE:
+            print(
+                str(s)
+                + " ||| "
+                + f"rsi={RSI[c.date]:>2.0f}, urate={URATE[c.date] * 100:>2.0f}%, vol={VOLATILITY[c.date]:.0f}",
+                file=fd,
+            )
 
         if s.status.is_sold():
             break
+
+        elif s.status.is_exhausted() and s.cycle_done():
+            break
+
+    NUM_SIMULATED += 1
+    if not s.status.is_sold() and not s.status.is_exhausted():
+        NUM_RETIRED += 1
+
+    if DEBUG:
+        fd.close()
 
     return history
 
@@ -110,7 +146,10 @@ def test(
     config: Config,
     start: str,
     end: str,
-) -> float:
+) -> Tuple[Dict[int, List[Result]], Dict[int, List[History]], float]:
+    global NUM_SIMULATED, NUM_RETIRED
+    NUM_SIMULATED = 0
+    NUM_RETIRED = 0
 
     full_chart = read_chart(ticker, "", "")
     chart = read_chart(ticker, start, end)
@@ -125,7 +164,7 @@ def test(
 
     _charts = charts
 
-    histories: Dict[int, List[State]] = {}
+    histories: Dict[int, List[History]] = {}
     results: Dict[int, List[Result]] = {}
 
     for cycle in range(MAX_CYCLES):
@@ -181,5 +220,10 @@ def test(
         f"{ticker}: {config} | {score:.2f} ({avg_ror_per_year * 100:.1f}%, {fail_rate * 100:.1f}%)"
     )
 
+    if VERBOSE and NUM_RETIRED > 0.05 * NUM_SIMULATED:
+        print(
+            f"[warning] {NUM_RETIRED / NUM_SIMULATED * 100:.1f}% simulations retired"
+        )
+
     sys.stdout.flush()
-    return score
+    return results, histories, score

@@ -12,8 +12,8 @@ from scipy.optimize import differential_evolution
 from src.test import test
 from src.utils import analyze_result
 
-from src.configs import Bounds, Precisions, Config, best_configs
-from src.env import TICKERS
+from src.configs import Bounds, Precisions, Config
+from src.env import TICKERS, BEST_CONFIGS
 
 
 @click.command()
@@ -42,7 +42,7 @@ def optimize(mode, directory, ticker, fixed):
     except:
         raise RuntimeError(f"Invalid format for fixed")
 
-    config = best_configs[ticker]
+    config = BEST_CONFIGS[ticker]
     _bounds = Bounds()
 
     variables = []
@@ -73,7 +73,8 @@ def optimize(mode, directory, ticker, fixed):
             p = getattr(_precisions, k)
             _config[k] = int(v / p) * p
 
-        return -test(ticker, Config(**_config), start, end)
+        _, _, score = test(ticker, Config(**_config), start, end)
+        return -score
 
     opt = differential_evolution(_test, bounds=bounds)
     print(f"Result: {opt.fun}, Best args: {opt.x}")

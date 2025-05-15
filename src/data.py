@@ -121,11 +121,11 @@ def compute_volatility(chart: List[StockRow], term: int) -> Dict[str, float]:
 
     prices = []
     for date, _, cp in chart:
-        volatility[date] = compute(prices)
         prices += [cp]
-
         if len(prices) > term + 1:
             prices.pop(0)
+
+        volatility[date] = compute(prices)
 
     return volatility
 
