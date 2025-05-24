@@ -174,7 +174,7 @@ Full simulation results with the best configurations are shown below.
 ![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/SOXL%3A2001-07-13-2025-05-16.png?raw=true)
 
 * TECL (Average RoR per year: 9.3%, Fail rate: 4.7%)
-![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/TECL%1998-12-22-2025-05-16.png?raw=true)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/TECL%3A1998-12-22-2025-05-16.png?raw=true)
 
 * TNA (Average RoR per year: 6.5%, Fail rate: 2.9%)
 ![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/TNA%3A2004-04-30-2025-05-16.png?raw=true)
