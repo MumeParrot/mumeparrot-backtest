@@ -13,7 +13,7 @@ from src.test import test
 from src.utils import analyze_result
 
 from src.configs import Bounds, Precisions, Config
-from src.env import TICKERS, BEST_CONFIGS
+from src.env import TICKERS, BEST_CONFIGS, START, END
 
 
 @click.command()
@@ -41,9 +41,6 @@ def optimize(mode, directory, ticker, fixed):
             print(f"======================")
 
         sys.exit()
-
-    start = os.environ.get("START", "")
-    end = os.environ.get("END", "")
 
     if ticker not in TICKERS.keys():
         raise RuntimeError(f"Unknown ticker: {ticker}")
@@ -85,7 +82,7 @@ def optimize(mode, directory, ticker, fixed):
             p = getattr(_precisions, k)
             _config[k] = int(v / p) * p
 
-        _, _, score = test(ticker, Config(**_config), start, end)
+        _, _, score = test(ticker, Config(**_config), START, END)
         return -score
 
     opt = differential_evolution(_test, bounds=bounds)

@@ -160,6 +160,12 @@ def main():
                     " CONFIGS_FILE: path to best configs file (default: configs.json)"
                 )
                 print(
+                    " START: start date in 'yyyy-mm-dd' format, either 'yyyy' or 'yyyy-mm' are allowed also (default: empty)"
+                )
+                print(
+                    " END: end date in 'yyyy-mm-dd' format, either 'yyyy' or 'yyyy-mm' are allowed also (default: empty)"
+                )
+                print(
                     " CYCLE_DAYS: number of days to simulate per each cycle (default: 60)"
                 )
                 print(" SEED: amount of seed (default: 1000000)")

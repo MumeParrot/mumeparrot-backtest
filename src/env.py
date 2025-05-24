@@ -5,6 +5,9 @@ from .configs import Config
 import os
 import json
 
+START: str = os.environ.get("START", "")
+END: str = os.environ.get("END", "")
+
 TICKER_FILE = os.environ.get("TICKER_FILE", "tickers.json")
 CONFIGS_FILE = os.environ.get("CONFIGS", "configs.json")
 
