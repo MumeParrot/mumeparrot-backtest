@@ -17,10 +17,22 @@ from src.env import TICKERS, BEST_CONFIGS
 
 
 @click.command()
-@click.option("--mode", "-m", default="o")
-@click.option("--directory", "-d", required=False)
-@click.option("--ticker", "-t", required=False, type=str)
-@click.option("--fixed", "-f", required=False, type=str)
+@click.option(
+    "--mode",
+    "-m",
+    default="o",
+    type=click.Choice(["o", "a"]),
+    help="Optimize or analyze",
+)
+@click.option(
+    "--directory", "-d", required=False, help="Directory to save results"
+)
+@click.option(
+    "--ticker", "-t", required=False, type=click.Choice(list(TICKERS.keys()))
+)
+@click.option(
+    "--fixed", "-f", required=False, type=str, help="Fixed config parameters"
+)
 def optimize(mode, directory, ticker, fixed):
     if mode == "a":
         for ticker in TICKERS.keys():

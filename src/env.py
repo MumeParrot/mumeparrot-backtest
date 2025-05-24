@@ -25,3 +25,5 @@ MAX_CYCLES: int = int(os.environ.get("MAX_CYCLES", 2))
 
 FAIL_PANELTY: int = int(os.environ.get("FAIL_PENALTY", 2))
 FAIL_LIMIT: float = float(os.environ.get("FAIL_LIMIT", 0.1))
+
+GRAPH: bool = bool(int(os.environ.get("GRAPH", 0)))

@@ -5,6 +5,20 @@ from dataclasses import dataclass, asdict
 
 
 @dataclass
+class Description:
+    term: str = "number of days to split the seed and buy the stock"
+    margin: str = "margin to sell the stock"
+    bullish_rsi: str = "rsi threshold to buy the stock"
+    bullish_u50: str = (
+        "rate of market days under 50 moving average to determine burst buy and "
+    )
+    burst_scale: str = "scale of burst buy when the market fluctuates"
+    burst_vol: str = "volatility threshold to determine burst buy"
+    sell_base: str = "base sell rate when all seed is exhausted"
+    sahm_threshold: str = "sahm threshold to exclude when sliding window test"
+
+
+@dataclass
 class Bounds:
     term: Tuple[int] = (40, 40)
     margin: Tuple[float] = (0.05, 0.15)
