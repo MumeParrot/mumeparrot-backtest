@@ -108,5 +108,13 @@ def plot_sim(ticker: str, start: str, end: str, history: List[State]):
     ax1.set_title(f"{ticker} ({dates[0]} ~ {dates[-1]})")
     ax1.legend()
 
+    ax1.set_ylabel("Stock price ($)")
+    ax2.set_ylabel("Rate of return (RoR)")
+    ax2.legend(loc="upper right")
+
     ax1.grid(axis="both")
     plt.show()
+    # plt.savefig(
+    #     f"figures/{ticker}:{history[0].date}-{history[-1].date}.png",
+    #     bbox_inches="tight",
+    # )
