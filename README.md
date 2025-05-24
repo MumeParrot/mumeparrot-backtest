@@ -3,13 +3,13 @@
 # Backtest Tool for MumeParrot
 
 MumeParrot ([android](https://play.google.com/store/apps/details?id=com.mumemume.mumeparrot&hl=en), [ios](https://testflight.apple.com/join/wBtRGB72)) trades the stocks on behalf of users.
-Especially, MumeParrot strictly follows the stock trading strategy based on [Infinite Buying](https://blog.naver.com/mortley/222577958223) (For non-korean readers, please refer to [Background of MumeParrot]()).
+Especially, MumeParrot strictly follows the stock trading strategy based on [Infinite Buying](https://blog.naver.com/mortley/222577958223) (For non-korean readers, please refer to [Background of MumeParrot](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/background-of-mumeparrot.pdf)).
 However, following Infinite Buying as it is has a high risk of failure and some missing parts on handling such cases.
 
 Thus, MumeParrot backtest seeks for more safe strategy with higher return rate. 
 Based on Infinite Buying, it backtests the strategy with variable parameters on the historical chart of stocks.
 Once a better strategy and parameters are found, it will be updated to MumeParrot to follow them in real world.
-For more details, please refer to the [Background of MumeParrot]().
+For more details, please refer to the [Background of MumeParrot](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/background-of-mumeparrot.pdf).
 
 ## Usage
 
@@ -39,7 +39,7 @@ It has two modes: sliding window mode (`t`) and full simulation mode (`f`).
 
 * **Sliding window mode** is to statistically capture the performance of strategy (i.e., whether it correctly captures the fluctuation of the stock and makes profit from it).
 Especially, this mode is to correctly capture the effect of stock price fluctuation (which is the core backbone of Infinite Buying to make profit), but exclude any other external factors such as long-term price variation.
-Please refer to [Background of MumeParrot]() for more details.
+Please refer to [Background of MumeParrot](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/background-of-mumeparrot.pdf) for more details.
 
 * **Full simulation mode** is to simulate the given strategy throughout the entire period of market (like the backtests normally done).
 However, one cannot trust the results of this mode 100% as those results are quite sensitive to noise, and that's the reason why we need Sliding window mode.
