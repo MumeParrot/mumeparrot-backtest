@@ -1,3 +1,5 @@
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/mumeparrot_round.png?raw=true)
+
 # Backtest Tool for MumeParrot
 
 MumeParrot ([android](https://play.google.com/store/apps/details?id=com.mumemume.mumeparrot&hl=en), [ios](https://testflight.apple.com/join/wBtRGB72)) trades the stocks on behalf of users.
