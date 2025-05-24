@@ -132,6 +132,58 @@ WEBL: term: 40, margin: 0.09, bullish_rsi: 90, bullish_u50: 0.70, burst_scale: 2
 TQQQ: term: 40, margin: 0.06, bullish_rsi: 95, bullish_u50: 0.60, burst_scale: 1.00, burst_vol: 25, sell_base: 0.00, sahm_threshold: 1.00 | 11.91 (13.3%, 5.1%)
 ```
 
-Full simulation results are shown below.
+Full simulation results with the best configurations are shown below.
 
+* UPRO (Average RoR per year: 13.1%, Fail rate: 6.1%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/UPRO%3A1993-01-29-2025-05-16.png?raw=true)
 
+* SPXL (Average RoR per year: 11.9%, Fail rate: 6.0%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/SPXL%3A1993-01-29-2025-05-16.png?raw=true)
+
+* CURE (Average RoR per year: 8.0%, Fail rate: 5.8%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/CURE%3A1998-12-22-2025-05-16.png?raw=true)
+
+* DFEN (Average RoR per year: 11.3%, Fail rate: 8.9%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/DFEN%3A2003-11-11-2025-05-16.png?raw=true)
+
+* FAS (Average RoR per year: 9.0%, Fail rate: 8.0%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/FAS%3A1998-12-22-2025-05-16.png?raw=true)
+
+* FNGB (Average RoR per year: 20.1%, Fail rate: 4.3%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/FNGB%3A2017-09-26-2025-05-16.png?raw=true)
+
+* HIBL (Average RoR per year: 11.4%, Fail rate: 2.3%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/HIBL%3A2011-04-15-2025-05-16.png?raw=true)
+
+* LABU (Average RoR per year: 3.7%, Fail rate: 10.2%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/LABU%3A2010-11-30-2025-05-16.png?raw=true)
+
+* MIDU (Average RoR per year: 9.5%, Fail rate: 6.1%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/MIDU%3A2000-05-26-2025-05-16.png?raw=true)
+
+* NAIL (Average RoR per year: -1.5%, Fail rate: 8.8%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/NAIL%3A2006-04-28-2025-05-16.png?raw=true)
+
+* PILL (Average RoR per year: 4.5%, Fail rate: 3.5%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/PILL%3A2010-11-30-2025-05-16.png?raw=true)
+
+* RETL (Average RoR per year: 6.8%, Fail rate: 4.2%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/RETL%3A2006-06-22-2025-05-16.png?raw=true)
+
+* SOXL (Average RoR per year: 17.1%, Fail rate: 6.3%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/SOXL%3A2001-07-13-2025-05-16.png?raw=true)
+
+* TECL (Average RoR per year: 9.3%, Fail rate: 4.7%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/TECL%1998-12-22-2025-05-16.png?raw=true)
+
+* TNA (Average RoR per year: 6.5%, Fail rate: 2.9%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/TNA%3A2004-04-30-2025-05-16.png?raw=true)
+
+* TQQQ (Average RoR per year: 7.4%, Fail rate: 6.2%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/TQQQ%3A1999-03-10-2025-05-16.png?raw=true)
+
+* WANT (Average RoR per year: 9.6%, Fail rate: 4.3%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/WANT%3A1998-12-22-2025-05-16.png?raw=true)
+
+* WEBL (Average RoR per year: 15.3%, Fail rate: 7.3%)
+![alt text](https://github.com/MumeParrot/mumeparrot-backtest/blob/main/figures/WEBL%3A2004-05-03-2025-05-16.png?raw=true)
