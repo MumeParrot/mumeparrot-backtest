@@ -13,7 +13,7 @@ For more details, please refer to the [Background of MumeParrot](https://github.
 
 ## Usage
 
-### 1. Fetch Chart History
+### 1. Fetch Chart History (For now, you don't need this. Will be updated later)
 
 To run this backtest tool, you first have to fetch the chart data.
 `fetch-charts.py` fetches the historical chart of stocks listed in `tickers.json` (by default) and saves them under `charts` directory.
