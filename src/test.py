@@ -1,3 +1,4 @@
+import os
 import sys
 from statistics import mean
 from typing import List, Dict, Tuple
@@ -105,6 +106,7 @@ def simulate(
     global NUM_SIMULATED, NUM_RETIRED
 
     if DEBUG:
+        os.makedirs("logs/test", exist_ok=True)
         fd = open(f"logs/test/{chart[0].date}-{max_cycle}.log", "w")
     elif VERBOSE:
         fd = sys.stdout

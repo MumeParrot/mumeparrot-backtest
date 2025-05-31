@@ -24,15 +24,15 @@ now: datetime = None
 @click.option(
     "--input",
     "-i",
-    required=True,
-    help="json file containing key, value map of 3-times ticker and 1-times base ticker",
+    help="json file containing key, value map of 3-times ticker and 1-times base ticker (default: tickers.json)",
+    default="tickers.json",
 )
 @click.option("--graph", "-g", is_flag=True, help="Draw graph for each ticker")
 def main(input, graph):
     global gc, now
 
     try:
-        gc = gspread.service_account(filename='bot.json')
+        gc = gspread.service_account(filename="bot.json")
     except Exception as e:
         print(f"Error getting gspread service account\n${e}")
         sys.exit(0)
@@ -43,7 +43,7 @@ def main(input, graph):
 
     now = datetime.now()
 
-    os.makedirs('charts', exist_ok=True)
+    os.makedirs("charts", exist_ok=True)
 
     tickers: Dict[str, str] = None
     try:
@@ -87,7 +87,7 @@ def fetch(ticker: str) -> pd.DataFrame:
     tmp = f"{ticker}-{random.randint(0, 10000)}"
     y, m, d = now.year, now.month, now.day
 
-    file = gc.open('mumeparrot-backtest-notepad')
+    file = gc.open("mumeparrot-backtest-notepad")
     sheet = file.add_worksheet(title=tmp, rows=1, cols=1)
     sheet.update(
         "A1",

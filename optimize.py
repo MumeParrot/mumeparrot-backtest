@@ -13,14 +13,26 @@ from src.test import test
 from src.utils import analyze_result
 
 from src.configs import Bounds, Precisions, Config
-from src.env import TICKERS, BEST_CONFIGS
+from src.env import TICKERS, BEST_CONFIGS, START, END
 
 
 @click.command()
-@click.option("--mode", "-m", default="o")
-@click.option("--directory", "-d", required=False)
-@click.option("--ticker", "-t", required=False, type=str)
-@click.option("--fixed", "-f", required=False, type=str)
+@click.option(
+    "--mode",
+    "-m",
+    default="o",
+    type=click.Choice(["o", "a"]),
+    help="Optimize or analyze",
+)
+@click.option(
+    "--directory", "-d", required=False, help="Directory to save results"
+)
+@click.option(
+    "--ticker", "-t", required=False, type=click.Choice(list(TICKERS.keys()))
+)
+@click.option(
+    "--fixed", "-f", required=False, type=str, help="Fixed config parameters"
+)
 def optimize(mode, directory, ticker, fixed):
     if mode == "a":
         for ticker in TICKERS.keys():
@@ -29,9 +41,6 @@ def optimize(mode, directory, ticker, fixed):
             print(f"======================")
 
         sys.exit()
-
-    start = os.environ.get("START", "")
-    end = os.environ.get("END", "")
 
     if ticker not in TICKERS.keys():
         raise RuntimeError(f"Unknown ticker: {ticker}")
@@ -73,7 +82,7 @@ def optimize(mode, directory, ticker, fixed):
             p = getattr(_precisions, k)
             _config[k] = int(v / p) * p
 
-        _, _, score = test(ticker, Config(**_config), start, end)
+        _, _, score = test(ticker, Config(**_config), START, END)
         return -score
 
     opt = differential_evolution(_test, bounds=bounds)

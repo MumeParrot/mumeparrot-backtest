@@ -5,6 +5,9 @@ from .configs import Config
 import os
 import json
 
+START: str = os.environ.get("START", "")
+END: str = os.environ.get("END", "")
+
 TICKER_FILE = os.environ.get("TICKER_FILE", "tickers.json")
 CONFIGS_FILE = os.environ.get("CONFIGS", "configs.json")
 
@@ -25,3 +28,5 @@ MAX_CYCLES: int = int(os.environ.get("MAX_CYCLES", 2))
 
 FAIL_PANELTY: int = int(os.environ.get("FAIL_PENALTY", 2))
 FAIL_LIMIT: float = float(os.environ.get("FAIL_LIMIT", 0.1))
+
+GRAPH: bool = bool(int(os.environ.get("GRAPH", 0)))
