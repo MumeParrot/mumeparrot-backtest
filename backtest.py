@@ -182,6 +182,21 @@ def main():
                 print(" VERBOSE: set to print history (default: 0)")
                 print(" GRAPH: print graph when full simulation (default: 0)")
 
+            elif mode.startswith("c"):
+                ticker = get_arg("ticker", tpe=str, default="all")
+                config: str = get_arg("config", tpe=str, default="best")
+                var_corr: str = get_arg("var_corr", tpe=str, default="urate")
+                # supported variables: urate, quad
+                                
+                config = copy.deepcopy(BEST_CONFIGS[ticker])
+                for k, v in config_fields.items():
+                    if v is not None:
+                        setattr(config, k, v)
+                
+                print(ticker)
+                history = full(ticker, config, start, end)
+                plot_sim_corr(ticker, start, end, history, var_corr)
+
         except RuntimeError:
             continue
 

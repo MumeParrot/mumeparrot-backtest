@@ -130,3 +130,53 @@ def plot_sim(ticker: str, start: str, end: str, history: List[State]):
     #     f"figures/{ticker}:{history[0].date}-{history[-1].date}.png",
     #     bbox_inches="tight",
     # )
+
+
+def plot_sim_corr(ticker: str, start: str, end: str, history: List[State], param: str):
+    print(param)
+    full_chart = read_chart(ticker, "", "")
+
+    next_cycle_ror = []
+    for c_idx, c in enumerate(full_chart[:-CYCLE_DAYS]):
+        next_cycle_ror.append(100*(full_chart[c_idx+CYCLE_DAYS].close_price / c.close_price))
+
+    if param == 'urate':
+
+        param_data = compute_urates(full_chart, 50, CYCLE_DAYS)
+        param_data_list = list(param_data.values())[:-CYCLE_DAYS]
+
+        plt_ylabel = 'Urate computed with 50 days avg.'
+
+    elif param == 'quad':
+        param_data = compute_quad_var(full_chart, 50, CYCLE_DAYS) 
+        param_data_list = list(param_data.values())[:-CYCLE_DAYS]
+        plt_ylabel = 'Quadratic variation'
+
+    dates = [s.date for s in history] 
+
+    fig = plt.figure(figsize=(20, 8))
+    ax1 = fig.add_subplot(121)
+    ax2 = ax1.twinx()
+
+    price_line, = ax1.plot([s.close_price for s in history], color="black", label="price")
+    ax1.set_yscale('log')
+    param_line, = ax2.plot([param_data[s] for s in param_data], color="gray", label=param)
+
+    xticks, xticklabels = get_ticks(dates, granul=Granul.Year2)
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels(xticklabels)
+
+    ax1.set_title(f"{ticker} ({dates[0]} ~ {dates[-1]})")
+    lines = [price_line, param_line]
+    labels = [line.get_label() for line in lines]
+    ax1.legend(lines, labels, loc='upper right')
+    ax1.grid(axis="both")
+
+    ax3 = fig.add_subplot(122)
+    ax3.scatter(next_cycle_ror, param_data_list, alpha=0.3, edgecolors='none')
+    if param == 'urate':
+        ax3.set_xscale('log')
+
+    plt.xlabel("Next cycle return (%) (log scale)")
+    plt.ylabel(plt_ylabel)
+    plt.show()
