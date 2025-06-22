@@ -5,7 +5,7 @@ from dataclasses import dataclass, astuple
 
 from datetime import datetime
 
-from .env import COMMISSION_RATE
+from .env import MARKET_DAYS_PER_YEAR, COMMISSION_RATE, BOXX, BOXX_UNIT, BOXX_IR
 
 
 class SeedExhausted(Exception):
@@ -52,6 +52,12 @@ class State:
     status: Status
     cycle: int
 
+    # BOXX related fields (these should not affect simulation)
+    # balance + boxx_seed = remaining_seed
+    balance: float  # should be within BOXX_UNIT * seed ~ 2 * BOXX_UNIT * seed
+    boxx_seed: float
+    boxx_eval: float
+
     # Auto filled fields
     avg_price: float = None
     stock_eval: float = None
@@ -73,6 +79,9 @@ class State:
             status=Status.Buying,
             cycle=0,
             max_cycle=max_cycle,
+            balance=seed,
+            boxx_seed=0,
+            boxx_eval=0,
         )
 
     @classmethod
@@ -137,6 +146,15 @@ class State:
         self.stock_qty -= qty
         self.commission += commission
 
+        self.balance += qty * sell_price - commission
+        if BOXX and self.balance > 2 * BOXX_UNIT * self.seed:
+            boxx_buy = self.balance - 2 * BOXX_UNIT * self.seed
+            boxx_commission = boxx_buy * COMMISSION_RATE
+
+            self.balance -= boxx_buy
+            self.boxx_seed += boxx_buy
+            self.boxx_eval += boxx_buy - boxx_commission
+
         self.status = Status.Sold if sold else Status.Exhausted
         self.cycle = 0 if sold or all_cycle_used else self.cycle + 1
 
@@ -144,8 +162,24 @@ class State:
         commission = qty * buy_price * COMMISSION_RATE
 
         self.invested_seed += qty * buy_price
-        self.remaining_seed -= qty * buy_price - commission
+        self.remaining_seed -= qty * buy_price + commission
         self.commission += commission
+
+        self.balance -= qty * buy_price + commission
+        if (
+            BOXX
+            and self.balance < BOXX_UNIT * self.seed
+            and self.boxx_seed >= BOXX_UNIT * self.seed
+        ):
+            boxx_sell = BOXX_UNIT * self.seed
+            boxx_commission = boxx_sell * COMMISSION_RATE
+
+            self.balance += boxx_sell
+            self.boxx_seed -= boxx_sell
+            self.boxx_eval -= boxx_sell + boxx_commission
+
+            # if self.boxx_eval < 0:
+            #     print(f"[{self.date}] boxx={self.boxx_eval}")
 
         self.stock_qty += qty
         self.status = Status.Buying
@@ -157,7 +191,14 @@ class State:
         self.stock_eval = (
             self.stock_qty * self.close_price if self.stock_qty > 0 else 0
         )
-        self.ror = (self.remaining_seed + self.stock_eval) / self.principal - 1
+
+        if self.boxx_eval > 0:
+            self.boxx_eval *= 1 + (BOXX_IR / MARKET_DAYS_PER_YEAR)
+        boxx_profit = self.boxx_eval - self.boxx_seed
+
+        self.ror = (
+            self.remaining_seed + self.stock_eval + boxx_profit
+        ) / self.principal - 1
 
 
 class History(List[State]):

@@ -13,7 +13,7 @@ from src.full import full
 from src.plot import plot_chart, plot_sim
 
 from src.configs import Config, Description
-from src.env import TICKERS, BEST_CONFIGS, GRAPH
+from src.env import TICKERS, BEST_CONFIGS, GRAPH, BOXX
 
 stop = [False]
 
@@ -56,7 +56,7 @@ def get_arg(
                 else tpe(arg) if arg else None
             )
     except TypeError as e:
-        print(f"Invalid argument '{arg}' for {name}")
+        print(f"[-] Invalid argument '{arg}' for {name}")
         sys.exit(0)
 
     return var
@@ -78,6 +78,10 @@ def main():
                 plot_chart(ticker, start, end)
 
             elif mode.startswith("t"):  # test
+                if BOXX:
+                    print("[-] Test mode not supported with BOXX")
+                    sys.exit(0)
+
                 ticker = get_arg("ticker", tpe=str, default="all")
                 config: str = get_arg(
                     "config",

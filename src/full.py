@@ -11,7 +11,7 @@ from .data import (
     compute_volatility,
 )
 from .sim import oneday
-from .env import TICKERS, CYCLE_DAYS, SEED, MAX_CYCLES
+from .env import TICKERS, SEED, MAX_CYCLES, BOXX
 
 
 def full(
@@ -54,8 +54,12 @@ def full(
     base_ror = (base_end.close_price / base_start.close_price) - 1
     base_avg_ir = (1 + base_ror) ** (365 / n_days) - 1
 
-    n_exhausted = len([s for s in history if s.status == Status.Exhausted and s.cycle != 0])
-    n_failed = len([s for s in history if s.status == Status.Exhausted and s.cycle == 0])
+    n_exhausted = len(
+        [s for s in history if s.status == Status.Exhausted and s.cycle != 0]
+    )
+    n_failed = len(
+        [s for s in history if s.status == Status.Exhausted and s.cycle == 0]
+    )
     n_sold = len([s for s in history if s.status == Status.Sold])
     n_tot = n_exhausted + n_failed + n_sold
 
@@ -63,8 +67,14 @@ def full(
     fail_rate = n_failed / n_tot if n_tot else 0
 
     print(f"[{ticker} ({base_ticker})] {history[0].date} ~ {history[-1].date}")
-    print(f"Final RoR: {s.ror * 100:.1f}% ({avg_ir * 100:.1f}%)")
-    print(f"Base RoR: {base_ror * 100:.1f}% ({base_avg_ir * 100:.1f}%)")
-    print(f"Exhaust Rate: {exhaust_rate * 100:.1f}%, Fail Rate: {fail_rate * 100:.1f}%")
+    print(f"\tFinal RoR: {s.ror * 100:.1f}% ({avg_ir * 100:.1f}%)")
+    print(f"\tBase RoR: {base_ror * 100:.1f}% ({base_avg_ir * 100:.1f}%)")
+    print(
+        f"\tExhaust Rate: {exhaust_rate * 100:.1f}%, Fail Rate: {fail_rate * 100:.1f}%"
+    )
+    if BOXX:
+        boxx_ror = (s.boxx_eval - s.boxx_seed) / s.principal
+
+        print(f"\tBOXX Profit: {boxx_ror * 100:.1f}%")
 
     return history

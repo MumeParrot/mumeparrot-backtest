@@ -15,6 +15,7 @@ from .configs import Config
 
 from .sim import oneday
 from .env import (
+    MARKET_DAYS_PER_YEAR,
     DEBUG,
     VERBOSE,
     CYCLE_DAYS,
@@ -23,8 +24,6 @@ from .env import (
     FAIL_PANELTY,
     FAIL_LIMIT,
 )
-
-MARKET_DAYS_PER_YEAR = 260
 
 NUM_SIMULATED = 0
 NUM_RETIRED = 0

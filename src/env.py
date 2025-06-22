@@ -7,6 +7,7 @@ import json
 
 START: str = os.environ.get("START", "")
 END: str = os.environ.get("END", "")
+MARKET_DAYS_PER_YEAR = 260
 
 TICKER_FILE = os.environ.get("TICKER_FILE", "tickers.json")
 CONFIGS_FILE = os.environ.get("CONFIGS", "configs.json")
@@ -33,3 +34,11 @@ COMMISSION_RATE: float = float(os.environ.get("COMMISSION_RATE", 0))
 assert COMMISSION_RATE < 0.01, "commission rate cannot exceed 0.01"
 
 GRAPH: bool = bool(int(os.environ.get("GRAPH", 0)))
+BOXX: bool = bool(int(os.environ.get("BOXX", 0)))
+
+# BOXX_UNIT has two purposes
+# 1. it determines the minimum threshold of remaining balance
+# 2. it determines the unit amount of buying power for BOXX
+# i.e., 0.125 (= 1/8) means one week of seed
+BOXX_UNIT: float = float(os.environ.get("BOXX_UNIT", 0.125))
+BOXX_IR: float = float(os.environ.get("BOXX_IR", 0.045))
