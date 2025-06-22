@@ -110,7 +110,11 @@ class State:
             f"[{self.date} ({self.elapsed:02})] [{self.cycle}] "
             + f"seed={self.seed:>6.0f}({self.invested_seed:.0f}+{self.remaining_seed:.0f}) "
         )
-        s = f"{pfx:<51}"
+        s = f"{pfx:<52}"
+
+        if BOXX:
+            pfx = f"boxx={self.balance:.0f}+{self.boxx_seed:.0f}({self.boxx_eval - self.boxx_seed:.0f})"
+            s += f"{pfx:<26}"
 
         pfx = f"eval={self.stock_qty * self.close_price:.2f}({self.stock_qty}*{self.close_price:.2f}) "
         s += f"{pfx:<32}"
@@ -177,9 +181,6 @@ class State:
             self.balance += boxx_sell
             self.boxx_seed -= boxx_sell
             self.boxx_eval -= boxx_sell + boxx_commission
-
-            # if self.boxx_eval < 0:
-            #     print(f"[{self.date}] boxx={self.boxx_eval}")
 
         self.stock_qty += qty
         self.status = Status.Buying

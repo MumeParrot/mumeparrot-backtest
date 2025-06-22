@@ -1,3 +1,5 @@
+import os
+import sys
 from typing import List
 from datetime import datetime, timedelta
 
@@ -11,7 +13,7 @@ from .data import (
     compute_volatility,
 )
 from .sim import oneday
-from .env import TICKERS, SEED, MAX_CYCLES, BOXX
+from .env import DEBUG, VERBOSE, TICKERS, SEED, MAX_CYCLES, BOXX
 
 
 def full(
@@ -20,6 +22,13 @@ def full(
     start: str,
     end: str,
 ) -> List[State]:
+
+    if DEBUG:
+        os.makedirs("logs/full", exist_ok=True)
+        fd = open(f"logs/debug/{ticker}:{start}-{end}.log", "w")
+    elif VERBOSE:
+        fd = sys.stdout
+
     base_ticker = TICKERS[ticker]
 
     full_chart = read_chart(ticker, "", "")
@@ -41,6 +50,16 @@ def full(
         except SeedExhausted:
             print(f"[{ticker}] Seed exhausted on {s.date}")
             break
+
+        if DEBUG or VERBOSE:
+            print(
+                str(s)
+                + " ||| "
+                + f"rsi={RSI[c.date]:>2.0f}, urate={URATE[c.date] * 100:>2.0f}%, vol={VOLATILITY[c.date]:.0f}",
+                file=fd,
+            )
+        elif s.boxx_eval < 0:
+            print(f"[{s.date}] boxx exhuasted ({s.boxx_eval})")
 
     n_days = (
         datetime.strptime(history[-1].date, "%Y-%m-%d")
