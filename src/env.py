@@ -29,4 +29,7 @@ MAX_CYCLES: int = int(os.environ.get("MAX_CYCLES", 2))
 FAIL_PANELTY: int = int(os.environ.get("FAIL_PENALTY", 2))
 FAIL_LIMIT: float = float(os.environ.get("FAIL_LIMIT", 0.1))
 
+COMMISSION_RATE: float = float(os.environ.get("COMMISSION_RATE", 0))
+assert COMMISSION_RATE < 0.01, "commission rate cannot exceed 0.01"
+
 GRAPH: bool = bool(int(os.environ.get("GRAPH", 0)))

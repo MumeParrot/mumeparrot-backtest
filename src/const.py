@@ -5,6 +5,8 @@ from dataclasses import dataclass, astuple
 
 from datetime import datetime
 
+from .env import COMMISSION_RATE
+
 
 class SeedExhausted(Exception):
     pass
@@ -45,6 +47,7 @@ class State:
     invested_seed: float
     remaining_seed: float
     stock_qty: float
+    commission: float
 
     status: Status
     cycle: int
@@ -66,6 +69,7 @@ class State:
             invested_seed=0,
             remaining_seed=seed,
             stock_qty=0,
+            commission=0,
             status=Status.Buying,
             cycle=0,
             max_cycle=max_cycle,
@@ -113,10 +117,10 @@ class State:
     def __iter__(self):
         return iter(astuple(self))
 
-    def cycle_left(self):
+    def cycle_left(self) -> bool:
         return self.cycle < self.max_cycle
 
-    def cycle_done(self):
+    def cycle_done(self) -> bool:
         # self.cycle roll back to 0 when all cycles are used
         return self.cycle == 0
 
@@ -125,17 +129,23 @@ class State:
         if all_cycle_used:
             assert qty == self.stock_qty
 
+        commission = qty * sell_price * COMMISSION_RATE
+
         self.invested_seed -= qty * self.avg_price
-        self.remaining_seed += sell_price * qty
+        self.remaining_seed += qty * sell_price - commission
         self.seed = self.remaining_seed if sold else self.seed  # TODO
         self.stock_qty -= qty
+        self.commission += commission
 
         self.status = Status.Sold if sold else Status.Exhausted
         self.cycle = 0 if sold or all_cycle_used else self.cycle + 1
 
     def buy(self, qty: int, buy_price: float):
+        commission = qty * buy_price * COMMISSION_RATE
+
         self.invested_seed += qty * buy_price
-        self.remaining_seed -= qty * buy_price
+        self.remaining_seed -= qty * buy_price - commission
+        self.commission += commission
 
         self.stock_qty += qty
         self.status = Status.Buying
@@ -169,7 +179,7 @@ class Result:
     ror: float
 
     @property
-    def days(self):
+    def days(self) -> int:
         start: datetime = datetime.strptime(self.start, "%Y-%m-%d")
         end: datetime = datetime.strptime(self.end, "%Y-%m-%d")
 
