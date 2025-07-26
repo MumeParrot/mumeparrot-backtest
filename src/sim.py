@@ -46,14 +46,7 @@ def oneday(
             )
 
         dqty = int(dqtyD * rate)
-        if s.remaining_seed >= dqty * c.close_price:
-            new_s.buy(qty=dqty, buy_price=c.close_price)
-
-        elif s.remaining_seed >= c.close_price:
-            dqty = int(s.remaining_seed / c.close_price)
-            new_s.buy(qty=dqty, buy_price=c.close_price)
-
-        else:
+        if s.remaining_seed < c.close_price:
             assert s.status != Status.Sold
 
             if new_s.cycle_left():  # cycles left # TODO: consider RSI?
@@ -67,6 +60,13 @@ def oneday(
 
             else:  # exhausted
                 new_s.sell(qty=s.stock_qty, sell_price=c.close_price)
+
+        elif s.remaining_seed >= dqty * c.close_price:
+            new_s.buy(qty=dqty, buy_price=c.close_price)
+
+        else:  # s.remaining_seed >= c.close_price
+            dqty = int(s.remaining_seed / c.close_price)
+            new_s.buy(qty=dqty, buy_price=c.close_price)
 
     new_s.complete()
 

@@ -10,12 +10,12 @@ END: str = os.environ.get("END", "")
 MARKET_DAYS_PER_YEAR = 260
 
 TICKER_FILE = os.environ.get("TICKER_FILE", "tickers.json")
-CONFIGS_FILE = os.environ.get("CONFIGS", "configs.json")
+CONFIGS_FILE = os.environ.get("CONFIGS_FILE", "configs.json")
 
 with open(TICKER_FILE, "r") as fd:
     TICKERS: Dict[str, str] = json.load(fd)
 
-with open("configs.json", "r") as fd:
+with open(CONFIGS_FILE, "r") as fd:
     configs_json = json.load(fd)
 
     BEST_CONFIGS = {k: Config._from(configs_json[k]) for k in TICKERS.keys()}
