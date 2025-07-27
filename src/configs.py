@@ -15,6 +15,7 @@ class Description:
     burst_scale: str = "scale of burst buy when the market fluctuates"
     burst_vol: str = "volatility threshold to determine burst buy"
     sell_base: str = "base sell rate when all seed is exhausted"
+    sell_limit: str = "sell limit when all seed is exhausted"
     sahm_threshold: str = "sahm threshold to exclude when sliding window test"
 
 
@@ -27,6 +28,7 @@ class Bounds:
     burst_scale: Tuple[float] = (0.0, 3.0)
     burst_vol: Tuple[int] = (25, 50)
     sell_base: Tuple[float] = (0, 0.5)
+    sell_limit: Tuple[float] = (0.5, 1.0)
     sahm_threshold: Tuple[float] = (1.0, 1.0)
 
 
@@ -39,6 +41,7 @@ class Precisions:
     burst_scale: float = 0.5
     burst_vol: int = 5
     sell_base: float = 0.1
+    sell_limit: float = 0.1
     sahm_threshold: float = 0.5
 
 
@@ -51,6 +54,7 @@ class Config:
     burst_scale: float = 0.0
     burst_vol: int = 30
     sell_base: float = 0
+    sell_limit: float = 1
     sahm_threshold: float = 1.0
 
     @classmethod
@@ -63,6 +67,7 @@ class Config:
             burst_scale=map.get("burst_scale", cls.burst_scale),
             burst_vol=map.get("burst_vol", cls.burst_vol),
             sell_base=map.get("sell_base", cls.sell_base),
+            sell_limit=map.get("sell_limit", cls.sell_limit),
             sahm_threshold=map.get("sahm_threshold", cls.sahm_threshold),
         )
 
