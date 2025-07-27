@@ -155,7 +155,7 @@ def test(
     full_chart = read_chart(ticker, "", "")
     chart = read_chart(ticker, start, end)
 
-    URATE = compute_urates(full_chart, 50, CYCLE_DAYS)
+    URATE = compute_urates(full_chart, 50, config.term)
     RSI = compute_rsi(full_chart, 5)
     VOLATILITY = compute_volatility(full_chart, 5)
     SAHM_INDICATOR = read_sahm()

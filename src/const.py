@@ -7,6 +7,8 @@ from datetime import datetime
 
 from .env import MARKET_DAYS_PER_YEAR, COMMISSION_RATE, BOXX, BOXX_UNIT, BOXX_IR
 
+HOLD_ON_CNT = 0
+
 
 class SeedExhausted(Exception):
     pass
@@ -51,6 +53,7 @@ class State:
 
     status: Status
     cycle: int
+    hold_on: int
 
     # BOXX related fields (these should not affect simulation)
     # balance + boxx_seed = remaining_seed
@@ -78,6 +81,7 @@ class State:
             commission=0,
             status=Status.Buying,
             cycle=0,
+            hold_on=0,
             max_cycle=max_cycle,
             balance=seed,
             boxx_seed=0,
@@ -161,6 +165,7 @@ class State:
 
         self.status = Status.Sold if sold else Status.Exhausted
         self.cycle = 0 if sold or all_cycle_used else self.cycle + 1
+        self.hold_on = HOLD_ON_CNT if not sold else self.hold_on
 
     def buy(self, qty: int, buy_price: float):
         commission = qty * buy_price * COMMISSION_RATE
@@ -192,6 +197,9 @@ class State:
         self.stock_eval = (
             self.stock_qty * self.close_price if self.stock_qty > 0 else 0
         )
+
+        if self.hold_on > 0:
+            self.hold_on -= 1
 
         if self.boxx_eval > 0:
             self.boxx_eval *= 1 + (BOXX_IR / MARKET_DAYS_PER_YEAR)

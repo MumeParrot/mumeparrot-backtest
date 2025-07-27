@@ -46,7 +46,7 @@ def oneday(
             )
 
         dqty = int(dqtyD * rate)
-        if s.remaining_seed < c.close_price:
+        if s.remaining_seed < c.close_price and new_s.hold_on == 0:
             assert s.status != Status.Sold
 
             if new_s.cycle_left():  # cycles left # TODO: consider RSI?
