@@ -31,6 +31,7 @@ def analyze_result(directory: str, ticker: str):
 
     final_results = {}
     for f in files:
+        start = f.split[:-4]('-')[1]
         results = {}
 
         with open(f, "r") as fd:
@@ -39,7 +40,7 @@ def analyze_result(directory: str, ticker: str):
         for l in lines:
             try:
                 config_and_result, score = parse_line(l)
-                results[config_and_result] = score
+                results[(*config_and_result, start)] = score
             except Exception as e:
                 pass
 
@@ -50,5 +51,7 @@ def analyze_result(directory: str, ticker: str):
 
     final_results = sorted(final_results.items(), key=lambda item: -item[1])
 
-    for cr, score in final_results:
-        print(f"{score} {cr[1]}: {cr[0]}")
+    for crs, score in final_results:
+        config, result, start = crs
+        start = start or 'all'
+        print(f"[{start}] {score} {cr[1]}: {cr[0]}")
