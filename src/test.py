@@ -88,8 +88,8 @@ def compute_avg_ror(results: Dict[int, List[Result]]):
     for s, wr in weighted_results.items():
         weight, result = wr
 
-        tot_ror += weight * result.ror
-        tot_days += weight * result.days
+        tot_ror += weight * result.ror if result.sold else 0
+        tot_days += weight * result.days if result.sold else 0
 
     return tot_ror / tot_days * MARKET_DAYS_PER_YEAR
 
