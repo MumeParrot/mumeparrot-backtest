@@ -1,4 +1,5 @@
 from typing import Dict
+from pprint import pformat
 
 from .configs import Config
 
@@ -42,3 +43,16 @@ BOXX: bool = bool(int(os.environ.get("BOXX", 0)))
 # i.e., 0.125 (= 1/8) means one week of seed
 BOXX_UNIT: float = float(os.environ.get("BOXX_UNIT", 0.125))
 BOXX_IR: float = float(os.environ.get("BOXX_IR", 0.045))
+
+
+def print_env():
+    print("Environment variables:")
+    for k, v in globals().items():
+        if k.isupper():
+            if k == "BEST_CONFIGS":
+                print(f"{k}:")
+                for ticker, config in v.items():
+                    print(f"  {ticker}: {config}")
+            else:
+                print(f"{k}: {pformat(v)}")
+    print("")

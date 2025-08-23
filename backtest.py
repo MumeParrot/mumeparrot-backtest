@@ -13,7 +13,7 @@ from src.full import full
 from src.plot import plot_chart, plot_sim
 
 from src.configs import Config, Description
-from src.env import TICKERS, BEST_CONFIGS, GRAPH, BOXX
+from src.env import START, END, TICKERS, BEST_CONFIGS, GRAPH, BOXX, print_env
 
 stop = [False]
 
@@ -63,8 +63,7 @@ def get_arg(
 
 
 def main():
-    start = os.environ.get("START", "")
-    end = os.environ.get("END", "")
+    print_env()
 
     while True:
         stop[0] = False
@@ -75,7 +74,7 @@ def main():
             mode: str = get_arg("mode", tpe=str, default="p")
             if mode.startswith("p"):  # plot
                 ticker = get_arg("ticker", tpe=str, default="all")
-                plot_chart(ticker, start, end)
+                plot_chart(ticker, START, END)
 
             elif mode.startswith("t"):  # test
                 if BOXX:
@@ -107,7 +106,7 @@ def main():
                         if v is not None:
                             setattr(config, k, v)
 
-                    test(ticker, config, start, end)
+                    test(ticker, config, START, END)
 
                 else:
                     for ticker in TICKERS.keys():
@@ -116,7 +115,7 @@ def main():
                             if v is not None:
                                 setattr(config, k, v)
 
-                        test(ticker, config, start, end)
+                        test(ticker, config, START, END)
 
             elif mode.startswith("f"):
                 ticker = get_arg("ticker", tpe=str, default="SOXL")
@@ -133,9 +132,9 @@ def main():
                     if v is not None:
                         setattr(config, k, v)
 
-                history = full(ticker, config, start, end)
+                history = full(ticker, config, START, END)
                 if GRAPH:
-                    plot_sim(ticker, start, end, history)
+                    plot_sim(ticker, START, END, history)
 
             elif mode.startswith("h"):
                 tickers = ""

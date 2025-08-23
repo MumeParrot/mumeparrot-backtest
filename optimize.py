@@ -13,7 +13,7 @@ from src.test import test
 from src.utils import analyze_result
 
 from src.configs import Bounds, Precisions, Config
-from src.env import TICKERS, BEST_CONFIGS, START, END
+from src.env import TICKERS, BEST_CONFIGS, START, END, print_env
 
 
 @click.command()
@@ -34,6 +34,8 @@ from src.env import TICKERS, BEST_CONFIGS, START, END
     "--fixed", "-f", required=False, type=str, help="Fixed config parameters"
 )
 def optimize(mode, directory, ticker, fixed):
+    print_env()
+
     if mode == "a":
         for ticker in TICKERS.keys():
             print(f"====== {ticker} ======")
