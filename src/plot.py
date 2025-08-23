@@ -118,3 +118,52 @@ def plot_sim(ticker: str, start: str, end: str, history: List[State]):
     #     f"figures/{ticker}:{history[0].date}-{history[-1].date}.png",
     #     bbox_inches="tight",
     # )
+
+
+def plot_sim_v2(ticker: str, start: str, end: str, history: List[State]):
+    dates = [s.date for s in history]
+
+    bought = [
+        i
+        for i, pn in enumerate(zip(history[:-1], history[1:]))
+        if pn[0].remaining_seed > pn[1].remaining_seed
+    ]
+
+    sold = [
+        i
+        for i, pn in enumerate(zip(history[:-1], history[1:]))
+        if pn[0].remaining_seed < pn[1].remaining_seed
+    ]
+
+    ymax = max(s.close_price for s in history)
+
+    fig = plt.figure(figsize=(20, 8))
+    ax1 = fig.add_subplot(111)
+    ax2 = ax1.twinx()
+
+    ax1.plot([s.close_price for s in history], color="black", label="price")
+    ax1.plot([s.avg_price for s in history], color="gray", label="avg_price")
+    for x in bought:
+        ax1.axvline(x, 0, ymax, color="red")
+    for x in sold:
+        ax1.axvline(x, 0, ymax, color="green")
+
+    ax2.plot([s.ror for s in history], color="blue", label="ror")
+
+    xticks, xticklabels = get_ticks(dates, granul=Granul.Month6)
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels(xticklabels)
+
+    ax1.set_title(f"{ticker} ({dates[0]} ~ {dates[-1]})")
+    ax1.legend()
+
+    ax1.set_ylabel("Stock price ($)")
+    ax2.set_ylabel("Rate of return (RoR)")
+    ax2.legend(loc="upper right")
+
+    ax1.grid(axis="both")
+    plt.show()
+    # plt.savefig(
+    #     f"figures/{ticker}:{history[0].date}-{history[-1].date}.png",
+    #     bbox_inches="tight",
+    # )

@@ -1,6 +1,6 @@
 import json
 
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Union
 from dataclasses import dataclass, asdict
 
 
@@ -18,6 +18,10 @@ class Description:
     sell_limit: str = "sell limit when all seed is exhausted"
     sahm_threshold: str = "sahm threshold to exclude when sliding window test"
 
+    split: str = "number to split the seed"
+    buy_rsi: str = "rsi threshold to buy the stock"
+    sell_rsi: str = "rsi threshold to sell the stock"
+
 
 @dataclass
 class Bounds:
@@ -30,6 +34,9 @@ class Bounds:
     sell_base: Tuple[float] = (0, 0.5)
     sell_limit: Tuple[float] = (0.5, 1.0)
     sahm_threshold: Tuple[float] = (1.0, 1.0)
+    split: Tuple[int] = (10, 20)
+    buy_rsi: Tuple[int] = (20, 50)
+    sell_rsi: Tuple[int] = (70, 100)
 
 
 @dataclass
@@ -43,33 +50,22 @@ class Precisions:
     sell_base: float = 0.1
     sell_limit: float = 0.1
     sahm_threshold: float = 0.5
+    split: int = 5
+    buy_rsi: int = 5
+    sell_rsi: int = 5
 
 
 @dataclass
 class Config:
-    term: int = 40
-    margin: float = 0.1  # [0.05:0.15:0.01] : 11
-    bullish_rsi: int = 80  # [40:100:5] : 13
-    bullish_u50: float = 0.5
-    burst_scale: float = 0.0
-    burst_vol: int = 30
-    sell_base: float = 0
-    sell_limit: float = 1
-    sahm_threshold: float = 1.0
-
     @classmethod
-    def _from(cls, map: Dict[str, Tuple[float, int]]) -> "Config":
-        return Config(
-            term=map.get("term", cls.term),
-            margin=map.get("margin", cls.margin),
-            bullish_rsi=map.get("bullish_rsi", cls.bullish_rsi),
-            bullish_u50=map.get("bullish_u50", cls.bullish_u50),
-            burst_scale=map.get("burst_scale", cls.burst_scale),
-            burst_vol=map.get("burst_vol", cls.burst_vol),
-            sell_base=map.get("sell_base", cls.sell_base),
-            sell_limit=map.get("sell_limit", cls.sell_limit),
-            sahm_threshold=map.get("sahm_threshold", cls.sahm_threshold),
-        )
+    def _from(cls, map: Dict[str, Union[float, int]]) -> "Config":
+        inst = cls()
+
+        for field, value in map.items():
+            if hasattr(inst, field):
+                setattr(inst, field, value)
+
+        return inst
 
     def __hash__(self):
         h = 0
@@ -85,3 +81,23 @@ class Config:
             l.append(f"{k}: {vs}")
 
         return ", ".join(l)
+
+
+@dataclass
+class V1Config(Config):
+    term: int = 40
+    margin: float = 0.1  # [0.05:0.15:0.01] : 11
+    bullish_rsi: int = 80  # [40:100:5] : 13
+    bullish_u50: float = 0.5
+    burst_scale: float = 0.0
+    burst_vol: int = 30
+    sell_base: float = 0
+    sell_limit: float = 1
+    sahm_threshold: float = 1.0
+
+
+@dataclass
+class V2Config(Config):
+    split: int = 10
+    buy_rsi: int = 30
+    sell_rsi: int = 80

@@ -1,6 +1,6 @@
 from typing import Dict
 
-from .configs import Config
+from .configs import V1Config, V2Config
 
 import os
 import json
@@ -16,9 +16,14 @@ with open(TICKER_FILE, "r") as fd:
     TICKERS: Dict[str, str] = json.load(fd)
 
 with open(CONFIGS_FILE, "r") as fd:
-    configs_json = json.load(fd)
+    configs_json: dict = json.load(fd)
 
-    BEST_CONFIGS = {k: Config._from(configs_json[k]) for k in TICKERS.keys()}
+    BEST_CONFIGS = {}
+    for k, c in configs_json.items():
+        if k in TICKERS.keys():  # 3X leverage ETF
+            BEST_CONFIGS[k] = V1Config._from(c)
+        else:  # Base ETF
+            BEST_CONFIGS[k] = V2Config._from(c)
 
 DEBUG: bool = bool(int(os.environ.get("DEBUG", 0)))
 VERBOSE: bool = bool(int(os.environ.get("VERBOSE", 0)))

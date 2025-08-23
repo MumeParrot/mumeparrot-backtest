@@ -27,8 +27,14 @@ now: datetime = None
     help="json file containing key, value map of 3-times ticker and 1-times base ticker (default: tickers.json)",
     default="tickers.json",
 )
+@click.option(
+    "--ticker",
+    "-t",
+    help="ticker to fetch chart history of",
+    default=None
+)
 @click.option("--graph", "-g", is_flag=True, help="Draw graph for each ticker")
-def main(input, graph):
+def main(input, ticker, graph):
     global gc, now
 
     try:
@@ -53,7 +59,11 @@ def main(input, graph):
         print(f"Error loading {input}")
         sys.exit(0)
 
-    for triple, base in tickers.items():
+    tickers_to_fetch = tickers
+    if ticker:
+        tickers_to_fetch = {ticker: tickers[ticker]}
+
+    for triple, base in tickers_to_fetch.items():
         print(f"Processing {triple} ({base})...")
 
         triple_chart = None

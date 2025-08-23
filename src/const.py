@@ -146,7 +146,9 @@ class State:
 
         self.invested_seed -= qty * self.avg_price
         self.remaining_seed += qty * sell_price - commission
-        self.seed = self.remaining_seed if sold else self.seed  # TODO
+        self.seed = (
+            self.remaining_seed + self.invested_seed if sold else self.seed
+        )  # TODO
         self.stock_qty -= qty
         self.commission += commission
 

@@ -9,10 +9,10 @@ from typing import Any, Type
 from dataclasses import asdict
 
 from src.test import test
-from src.full import full
-from src.plot import plot_chart, plot_sim
+from src.full import full, full_v2
+from src.plot import plot_chart, plot_sim, plot_sim_v2
 
-from src.configs import Config, Description
+from src.configs import V1Config, V2Config, Description
 from src.env import TICKERS, BEST_CONFIGS, GRAPH, BOXX
 
 stop = [False]
@@ -91,7 +91,7 @@ def main():
                 )
 
                 if config != "best":
-                    for field, value in asdict(Config()).items():
+                    for field, value in asdict(V1Config()).items():
                         default_val = (
                             None
                             if ticker == "all"
@@ -123,9 +123,14 @@ def main():
                 config: str = get_arg("config", tpe=str, default="best")
 
                 if config != "best":
-                    for field, value in asdict(Config()).items():
+                    for field, value in asdict(V1Config()).items():
+                        default_val = (
+                            None
+                            if ticker == "all"
+                            else getattr(BEST_CONFIGS[ticker], field)
+                        )
                         config_fields[field] = get_arg(
-                            field, tpe=type(value), default=None
+                            field, tpe=type(value), default=default_val
                         )
 
                 config = copy.deepcopy(BEST_CONFIGS[ticker])
@@ -136,6 +141,31 @@ def main():
                 history = full(ticker, config, start, end)
                 if GRAPH:
                     plot_sim(ticker, start, end, history)
+
+            elif mode.startswith("v"):
+                ticker = get_arg("ticker", tpe=str, default="SPY")
+                config: str = get_arg("config", tpe=str, default="best")
+
+                if config != "best":
+                    for field, value in asdict(V2Config()).items():
+                        config_fields[field] = get_arg(
+                            field,
+                            tpe=type(value),
+                            default=(
+                                None
+                                if ticker == "all"
+                                else getattr(BEST_CONFIGS[ticker], field)
+                            ),
+                        )
+                    config = V2Config._from(config_fields)
+                else:
+                    config = copy.deepcopy(BEST_CONFIGS[ticker])
+
+                print(config)
+
+                history = full_v2(ticker, config, start, end)
+                if GRAPH:
+                    plot_sim_v2(ticker, start, end, history)
 
             elif mode.startswith("h"):
                 tickers = ""

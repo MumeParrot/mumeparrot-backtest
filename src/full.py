@@ -3,8 +3,8 @@ import sys
 from typing import List
 from datetime import datetime, timedelta
 
-from .configs import Config
-from .const import SeedExhausted, State, Status
+from .configs import V1Config, V2Config
+from .const import SeedExhausted, State, Status, History
 from .data import (
     read_chart,
     read_base_chart,
@@ -12,16 +12,16 @@ from .data import (
     compute_rsi,
     compute_volatility,
 )
-from .sim import oneday
+from .sim import oneday, oneday_v2
 from .env import DEBUG, VERBOSE, TICKERS, SEED, MAX_CYCLES, BOXX
 
 
 def full(
     ticker: str,
-    config: Config,
+    config: V1Config,
     start: str,
     end: str,
-) -> List[State]:
+) -> History:
 
     if DEBUG:
         os.makedirs("logs/full", exist_ok=True)
@@ -42,7 +42,7 @@ def full(
     s: State = State.init(SEED, MAX_CYCLES - 1)
     s.complete()
 
-    history: List[State] = []
+    history: History = []
     for c in chart:
         try:
             s = oneday(c, s, config, RSI, VOLATILITY, URATE)
@@ -95,5 +95,55 @@ def full(
         boxx_ror = (s.boxx_eval - s.boxx_seed) / s.principal
 
         print(f"\tBOXX Profit: {boxx_ror * 100:.1f}%")
+
+    return history
+
+
+def full_v2(
+    ticker: str,
+    config: V2Config,
+    start: str,
+    end: str,
+) -> History:
+
+    if DEBUG:
+        os.makedirs("logs/full", exist_ok=True)
+        fd = open(f"logs/debug/{ticker}:{start}-{end}.log", "w")
+    elif VERBOSE:
+        fd = sys.stdout
+
+    chart = read_base_chart(ticker, start, end)
+
+    RSI = compute_rsi(chart, 10)
+
+    s: State = State.init(SEED, 0)
+    s.complete()
+
+    history: History = []
+    for c in chart:
+        s = oneday_v2(c, s, config, RSI)
+        history.append(s)
+
+        if DEBUG or VERBOSE:
+            print(
+                str(s) + " ||| " + f"rsi={RSI[c.date]:>2.0f}",
+                file=fd,
+            )
+
+    n_days = (
+        datetime.strptime(history[-1].date, "%Y-%m-%d")
+        - datetime.strptime(history[0].date, "%Y-%m-%d")
+    ).days
+    avg_ir = (1 + s.ror) ** (365 / n_days) - 1
+
+    base_end = [c for c in chart if c.date == history[-1].date][0]
+    base_start = [c for c in chart if c.date == history[0].date][0]
+
+    base_ror = (base_end.close_price / base_start.close_price) - 1
+    base_avg_ir = (1 + base_ror) ** (365 / n_days) - 1
+
+    print(f"[{ticker}] {history[0].date} ~ {history[-1].date}")
+    print(f"\tFinal RoR: {s.ror * 100:.1f}% ({avg_ir * 100:.1f}%)")
+    print(f"\tBase RoR: {base_ror * 100:.1f}% ({base_avg_ir * 100:.1f}%)")
 
     return history
