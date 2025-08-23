@@ -34,7 +34,7 @@ def oneday(
             rate = 0
 
         if (
-            urate < config.bullish_u50
+            urate < config.burst_urate
             and vol < 0
             and abs(vol) > config.burst_vol
         ):
