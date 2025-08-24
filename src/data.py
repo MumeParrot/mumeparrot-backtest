@@ -1,6 +1,8 @@
 import csv
 
 from typing import List, Dict
+from random import random
+from statistics import mean
 
 from .const import StockRow
 from .env import TICKERS
@@ -9,14 +11,32 @@ CHARTS_PATH = "charts"
 INDICES_PATH = "indices"
 
 
-def read_chart(ticker: str, start: str, end: str) -> List[StockRow]:
+def read_chart(
+    ticker: str, start: str, end: str, test_mode: bool = False
+) -> List[StockRow]:
     ticker = ticker.upper()
     if ticker not in TICKERS.keys():
         raise Exception(f"'{ticker}' is not supported")
 
+    history: List[StockRow] = []
     with open(f"{CHARTS_PATH}/{ticker}-GEN.csv", "r") as fd:
         reader = csv.reader(fd)
-        history = [StockRow(d, float(p), float(cp)) for d, p, cp in reader]
+        hist = [(d, float(p), float(cp)) for d, p, cp in reader]
+
+        mean_flucs = mean(abs((cp - p) / p) for _, p, cp in hist)
+        for d, p, cp in hist:
+            p = (
+                (1 - (mean_flucs / 2) + random() * mean_flucs) * float(p)
+                if test_mode
+                else float(p)
+            )
+            cp = (
+                (1 - (mean_flucs / 2) + random() * mean_flucs) * float(cp)
+                if test_mode
+                else float(cp)
+            )
+
+            history.append(StockRow(d, p, cp))
 
     sidx = 0
     if start != "":

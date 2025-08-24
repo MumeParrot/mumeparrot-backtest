@@ -53,8 +53,8 @@ class Config:
     burst_urate: float = 0.5
     burst_scale: float = 0.0
     burst_vol: int = 30
-    sell_base: float = 0
-    sell_limit: float = 1
+    sell_base: float = 0.0
+    sell_limit: float = 1.0
     sahm_threshold: float = 1.0
 
     @classmethod

@@ -1,10 +1,10 @@
 import os
 import sys
-from typing import List
+from typing import List, Tuple
 from datetime import datetime, timedelta
 
 from .configs import Config
-from .const import SeedExhausted, State, Status
+from .const import SeedExhausted, State, Status, History
 from .data import (
     read_chart,
     read_base_chart,
@@ -21,7 +21,8 @@ def full(
     config: Config,
     start: str,
     end: str,
-) -> List[State]:
+    test_mode: bool = False,
+) -> Tuple[History, float]:
 
     if DEBUG:
         os.makedirs("logs/full", exist_ok=True)
@@ -31,8 +32,8 @@ def full(
 
     base_ticker = TICKERS[ticker]
 
-    full_chart = read_chart(ticker, "", "")
-    chart = read_chart(ticker, start, end)
+    full_chart = read_chart(ticker, "", "", test_mode=test_mode)
+    chart = read_chart(ticker, start, end, test_mode=test_mode)
     base_chart = read_base_chart(base_ticker, start, end)
 
     URATE = compute_urates(full_chart, 50, config.term)
@@ -85,15 +86,21 @@ def full(
     exhaust_rate = n_exhausted / n_tot if n_tot else 0
     fail_rate = n_failed / n_tot if n_tot else 0
 
-    print(f"[{ticker} ({base_ticker})] {history[0].date} ~ {history[-1].date}")
-    print(f"\tFinal RoR: {s.ror * 100:.1f}% ({avg_ir * 100:.1f}%)")
-    print(f"\tBase RoR: {base_ror * 100:.1f}% ({base_avg_ir * 100:.1f}%)")
-    print(
-        f"\tExhaust Rate: {exhaust_rate * 100:.1f}%, Fail Rate: {fail_rate * 100:.1f}%"
-    )
-    if BOXX:
-        boxx_ror = (s.boxx_eval - s.boxx_seed) / s.principal
+    if test_mode:
+        print(f"{ticker}: {config} | {avg_ir:.2f}")
+    else:
+        print(
+            f"[{ticker} ({base_ticker})] {history[0].date} ~ {history[-1].date}"
+        )
+        print(f"\tFinal RoR: {s.ror * 100:.1f}% ({avg_ir * 100:.1f}%)")
+        print(f"\tBase RoR: {base_ror * 100:.1f}% ({base_avg_ir * 100:.1f}%)")
+        print(
+            f"\tExhaust Rate: {exhaust_rate * 100:.1f}%, Fail Rate: {fail_rate * 100:.1f}%"
+        )
 
-        print(f"\tBOXX Profit: {boxx_ror * 100:.1f}%")
+        if BOXX:
+            boxx_ror = (s.boxx_eval - s.boxx_seed) / s.principal
 
-    return history
+            print(f"\tBOXX Profit: {boxx_ror * 100:.1f}%")
+
+    return history, avg_ir

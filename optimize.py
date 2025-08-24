@@ -10,6 +10,7 @@ from dataclasses import asdict
 from scipy.optimize import differential_evolution
 
 from src.test import test
+from src.full import full
 from src.utils import analyze_result
 
 from src.configs import Bounds, Precisions, Config
@@ -20,9 +21,9 @@ from src.env import TICKERS, BEST_CONFIGS, START, END, print_env
 @click.option(
     "--mode",
     "-m",
-    default="o",
-    type=click.Choice(["o", "a"]),
-    help="Optimize or analyze",
+    default="t",
+    type=click.Choice(["t", "f", "a"]),
+    help="Test-mode optimize, full-mode optimize or analyze",
 )
 @click.option(
     "--directory", "-d", required=False, help="Directory to save results"
@@ -84,7 +85,12 @@ def optimize(mode, directory, ticker, fixed):
             p = getattr(_precisions, k)
             _config[k] = int(v / p) * p
 
-        _, _, score = test(ticker, Config(**_config), START, END)
+        if mode == "t":
+            _, _, score = test(ticker, Config(**_config), START, END)
+        else:  # 'f'
+            _, score = full(
+                ticker, Config(**_config), START, END, test_mode=True
+            )
         return -score
 
     opt = differential_evolution(_test, bounds=bounds)
