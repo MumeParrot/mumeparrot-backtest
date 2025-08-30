@@ -86,21 +86,16 @@ def full(
     exhaust_rate = n_exhausted / n_tot if n_tot else 0
     fail_rate = n_failed / n_tot if n_tot else 0
 
-    if test_mode:
-        print(f"{ticker}: {config} | {avg_ir:.2f}")
-    else:
-        print(
-            f"[{ticker} ({base_ticker})] {history[0].date} ~ {history[-1].date}"
-        )
-        print(f"\tFinal RoR: {s.ror * 100:.1f}% ({avg_ir * 100:.1f}%)")
-        print(f"\tBase RoR: {base_ror * 100:.1f}% ({base_avg_ir * 100:.1f}%)")
-        print(
-            f"\tExhaust Rate: {exhaust_rate * 100:.1f}%, Fail Rate: {fail_rate * 100:.1f}%"
-        )
+    print(f"[{ticker} ({base_ticker})] {history[0].date} ~ {history[-1].date}")
+    print(f"\tFinal RoR: {s.ror * 100:.1f}% ({avg_ir * 100:.1f}%)")
+    print(f"\tBase RoR: {base_ror * 100:.1f}% ({base_avg_ir * 100:.1f}%)")
+    print(
+        f"\tExhaust Rate: {exhaust_rate * 100:.1f}%, Fail Rate: {fail_rate * 100:.1f}%"
+    )
 
-        if BOXX:
-            boxx_ror = (s.boxx_eval - s.boxx_seed) / s.principal
+    if BOXX:
+        boxx_ror = (s.boxx_eval - s.boxx_seed) / s.principal
 
-            print(f"\tBOXX Profit: {boxx_ror * 100:.1f}%")
+        print(f"\tBOXX Profit: {boxx_ror * 100:.1f}%")
 
     return history, avg_ir

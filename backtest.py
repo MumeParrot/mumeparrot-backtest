@@ -13,7 +13,16 @@ from src.full import full
 from src.plot import plot_chart, plot_sim
 
 from src.configs import Config, Description
-from src.env import START, END, TICKERS, BEST_CONFIGS, GRAPH, BOXX, print_env
+from src.env import (
+    START,
+    END,
+    TICKERS,
+    BEST_CONFIGS,
+    GRAPH,
+    BOXX,
+    TEST_MODE,
+    print_env,
+)
 
 stop = [False]
 
@@ -123,8 +132,9 @@ def main():
 
                 if config != "best":
                     for field, value in asdict(Config()).items():
+                        default_val = getattr(BEST_CONFIGS[ticker], field)
                         config_fields[field] = get_arg(
-                            field, tpe=type(value), default=None
+                            field, tpe=type(value), default=default_val
                         )
 
                 config = copy.deepcopy(BEST_CONFIGS[ticker])
@@ -132,7 +142,7 @@ def main():
                     if v is not None:
                         setattr(config, k, v)
 
-                history = full(ticker, config, START, END)
+                history, _ = full(ticker, config, START, END, test_mode=TEST_MODE)
                 if GRAPH:
                     plot_sim(ticker, START, END, history)
 

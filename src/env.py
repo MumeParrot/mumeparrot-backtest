@@ -44,6 +44,8 @@ BOXX: bool = bool(int(os.environ.get("BOXX", 0)))
 BOXX_UNIT: float = float(os.environ.get("BOXX_UNIT", 0.125))
 BOXX_IR: float = float(os.environ.get("BOXX_IR", 0.045))
 
+TEST_MODE: bool = bool(os.environ.get("TEST_MODE", 0))
+
 
 def print_env():
     print("Environment variables:")
