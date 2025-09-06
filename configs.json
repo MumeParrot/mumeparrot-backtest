@@ -3,7 +3,7 @@
     "SPXL": { "margin": 0.08, "bullish_rsi": 60, "burst_urate": 0.5, "burst_scale": 0.5, "burst_vol": 25, "sell_base": 0.4 },
     "CURE": { "margin": 0.06, "bullish_rsi": 60, "burst_urate": 0.3, "burst_scale": 2.0, "burst_vol": 25, "sell_base": 0.3 },
     "DFEN": { "margin": 0.10, "bullish_rsi": 60, "burst_urate": 0.6, "burst_scale": 0.0, "burst_vol": 45, "sell_base": 0.3 },
-    "FNGB": { "margin": 0.08, "bullish_rsi": 80, "burst_urate": 0.5, "burst_scale": 1.0, "burst_vol": 25, "sell_base": 0.4 },
+    "FNGU": { "margin": 0.08, "bullish_rsi": 80, "burst_urate": 0.5, "burst_scale": 1.0, "burst_vol": 25, "sell_base": 0.4 },
     "FAS": { "margin": 0.10, "bullish_rsi": 60, "burst_urate": 0.5, "burst_scale": 0.5, "burst_vol": 30, "sell_base": 0.4 },
     "HIBL": { "margin": 0.05, "bullish_rsi": 65, "burst_urate": 0.5, "burst_scale": 2.0, "burst_vol": 25, "sell_base": 0.4 },
     "LABU": { "margin": 0.11, "bullish_rsi": 65, "burst_urate": 0.6, "burst_scale": 0.0, "burst_vol": 40, "sell_base": 0.0 },
