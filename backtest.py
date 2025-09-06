@@ -10,7 +10,7 @@ from dataclasses import asdict
 
 from src.test import test
 from src.full import full
-from src.plot import plot_chart, plot_sim
+from src.plot import plot_chart, plot_full
 
 from src.configs import Config, Description
 from src.env import START, END, TICKERS, BEST_CONFIGS, GRAPH, BOXX, print_env
@@ -134,7 +134,7 @@ def main():
 
                 history = full(ticker, config, START, END)
                 if GRAPH:
-                    plot_sim(ticker, START, END, history)
+                    plot_full(ticker, START, END, history)
 
             elif mode.startswith("h"):
                 tickers = ""

@@ -1,6 +1,6 @@
 import json
 
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Union
 from dataclasses import dataclass, asdict
 
 
@@ -58,7 +58,7 @@ class Config:
     sahm_threshold: float = 1.0
 
     @classmethod
-    def _from(cls, map: Dict[str, Tuple[float, int]]) -> "Config":
+    def _from(cls, map: Dict[str, Union[float, int]]) -> "Config":
         return Config(
             term=map.get("term", cls.term),
             margin=map.get("margin", cls.margin),

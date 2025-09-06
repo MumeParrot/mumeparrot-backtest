@@ -99,10 +99,10 @@ def read_sahm() -> Dict[str, float]:
     return sahm
 
 
-def compute_rsi(chart: List[StockRow], term: int) -> Dict[str, tuple]:
+def compute_rsi(chart: List[StockRow], term: int) -> Dict[str, float]:
     rsis = {}
 
-    def compute(ps: List[float]):
+    def compute(ps: List[float]) -> float:
         if len(ps) <= term:
             return 50
 
@@ -165,7 +165,9 @@ def compute_moving_average(
     return avg_history
 
 
-def compute_urates(chart: List[StockRow], avg: int, term: int):
+def compute_urates(
+    chart: List[StockRow], avg: int, term: int
+) -> Dict[str, float]:
     avg_history = compute_moving_average(chart, avg)
     u_rates = {}
 

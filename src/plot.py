@@ -9,8 +9,6 @@ import matplotlib.pyplot as plt
 from .const import Status, State
 from .data import read_chart
 
-matplotlib.use("TkAgg")
-
 
 class Granul(Enum):
     Month = 0
@@ -50,6 +48,8 @@ def get_ticks(dates: List[str], granul: Granul = Granul.Year):
 
 
 def plot_chart(ticker: str, start: str, end: str):
+    matplotlib.use("TkAgg")
+
     chart = read_chart(ticker, start, end)
 
     dates = [s.date for s in chart]
@@ -70,7 +70,9 @@ def plot_chart(ticker: str, start: str, end: str):
     plt.show()
 
 
-def plot_sim(ticker: str, start: str, end: str, history: List[State]):
+def plot_full(ticker: str, start: str, end: str, history: List[State]):
+    matplotlib.use("TkAgg")
+
     dates = [s.date for s in history]
     exhausted = [
         i
