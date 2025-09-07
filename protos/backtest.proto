@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package backtest;
+
+// MumeParrot Backtest service definition
+service MumeBacktestServer {
+
+    // Request a full backtest results
+    rpc FullBacktest (FullBacktestArg) returns (HistoryWithErr) {}
+}
+
+message Config {
+    int32 term              = 1;
+    double margin           = 2;
+    int32 bullish_rsi       = 3;
+    double burst_urate      = 4;
+    double burst_scale      = 5;
+    int32 burst_vol         = 6;
+    double sell_base        = 7;
+    double sell_limit       = 8;
+    double sahm_threshold   = 9;
+}
+
+enum Status {
+    BUYING      = 0;
+    SOLD        = 1;
+    EXHAUSTED   = 2;
+}
+
+message State {
+    string date             = 1;
+    int32 elapsed           = 2;
+    double principal        = 3;
+    double price            = 4;
+    double close_price      = 5;
+    int32 max_cycle         = 6;
+
+    double seed             = 7;
+    double invested_seed    = 8;
+    double remaining_seed   = 9;
+    double stock_qty        = 10;
+    double commission       = 11;
+
+    Status status           = 12;
+    int32 cycle             = 13;
+
+    double balance          = 14;
+    double boxx_seed        = 15;
+    double boxx_eval        = 16;
+
+    optional double avg_price   = 17;
+    optional double stock_eval  = 18;
+    optional double ror         = 19;
+}
+
+message FullBacktestArg {
+    string ticker           = 1;
+    string start            = 2;
+    string end              = 3;
+    optional Config config  = 4;
+}
+ 
+message HistoryWithErr {
+    repeated State      history = 1;
+    optional string     error   = 2;
+}
