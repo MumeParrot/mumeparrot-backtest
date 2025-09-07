@@ -30,7 +30,12 @@ def full_backtest(
 
     history: List[State] = []
     for c in chart:
-        s = oneday(c, s, config, rsis, volatilities, urates)
+        try:
+            s = oneday(c, s, config, rsis, volatilities, urates)
+        except SeedExhausted:
+            s = State.from_(s, c)
+            s.complete()
+
         history.append(s)
 
         if log_fd:
