@@ -13,7 +13,6 @@ from src.env import TICKERS, BEST_CONFIGS
 from src.configs import Config
 from src.data import read_chart, compute_rsi, compute_volatility, compute_urates
 from src.full import full_backtest
-from src.env import print_env
 
 
 class MumeBacktestServer(backtest_pb2_grpc.MumeBacktestServerServicer):
