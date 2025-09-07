@@ -46,10 +46,13 @@ class MumeBacktestServer(backtest_pb2_grpc.MumeBacktestServerServicer):
 
         def state_to_pb2(s: State) -> backtest_pb2.State:
             kwargs = {}
+
             for field in fields(s):
                 val = getattr(s, field.name, field.default)
                 kwargs[field.name] = (
-                    val.value if isinstance(val, Status) else val
+                    getattr(backtest_pb2.Status, val.name.upper())
+                    if isinstance(val, Status)
+                    else val
                 )
 
             return backtest_pb2.State(**kwargs)
