@@ -59,7 +59,7 @@ def full(
     log_fd = None
     if DEBUG:
         os.makedirs("logs/full", exist_ok=True)
-        log_fd = open(f"logs/debug/{ticker}:{start}-{end}.log", "w")
+        log_fd = open(f"logs/full/{ticker}:{start}-{end}.log", "w")
     elif VERBOSE:
         log_fd = sys.stdout
 

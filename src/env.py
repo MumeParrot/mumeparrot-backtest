@@ -50,9 +50,9 @@ def print_env():
     for k, v in globals().items():
         if k.isupper():
             if k == "BEST_CONFIGS":
-                print(f"{k}:")
+                print(f"  {k}:")
                 for ticker, config in v.items():
-                    print(f"  {ticker}: {config}")
+                    print(f"    {ticker}: {config}")
             else:
                 print(f"{k}: {pformat(v)}")
     print("")
