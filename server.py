@@ -11,13 +11,20 @@ import backtest_pb2_grpc
 from src.const import StockRow, Status, State
 from src.env import TICKERS, BEST_CONFIGS
 from src.configs import Config
-from src.data import read_chart, compute_rsi, compute_volatility, compute_urates
+from src.data import (
+    read_chart,
+    read_base_chart,
+    compute_rsi,
+    compute_volatility,
+    compute_urates,
+)
 from src.full import full_backtest
 
 
 class MumeBacktestServer(backtest_pb2_grpc.MumeBacktestServerServicer):
 
     CHARTS: Dict[str, List[StockRow]] = {}
+    BASE_CHARTS: Dict[str, List[StockRow]] = {}
     RSIS: Dict[str, Dict[str, float]] = {}
     VOLATILITIS: Dict[str, Dict[str, float]] = {}
     URATES: Dict[str, Dict[str, float]] = {}
@@ -25,9 +32,13 @@ class MumeBacktestServer(backtest_pb2_grpc.MumeBacktestServerServicer):
     @classmethod
     def initialize(cls):
         for ticker in TICKERS.keys():
+            base_ticker = TICKERS[ticker]
+
             chart = read_chart(ticker, "", "")
+            base_chart = read_base_chart(base_ticker, "", "")
 
             cls.CHARTS[ticker] = chart
+            cls.BASE_CHARTS[ticker] = base_chart
             cls.RSIS[ticker] = compute_rsi(chart, 5)
             cls.VOLATILITIS[ticker] = compute_volatility(chart, 5)
             cls.URATES[ticker] = compute_urates(chart, 50, 40)
@@ -84,6 +95,7 @@ class MumeBacktestServer(backtest_pb2_grpc.MumeBacktestServerServicer):
                 self.URATES[ticker],
                 self.RSIS[ticker],
                 self.VOLATILITIS[ticker],
+                base_chart=self.BASE_CHARTS[ticker],
             )
             history = [state_to_pb2(s) for s in history]
 

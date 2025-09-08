@@ -63,6 +63,8 @@ class State:
     stock_eval: float = None
     ror: float = None
 
+    base_ror: float = None
+
     @classmethod
     def init(cls, seed: float, max_cycle: int) -> "State":
         return State(
@@ -223,6 +225,8 @@ class State:
         self.ror = (
             self.remaining_seed + self.stock_eval + boxx_profit
         ) / self.principal - 1
+
+        self.base_ror = 0
 
 
 class History(List[State]):

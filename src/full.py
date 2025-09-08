@@ -23,10 +23,14 @@ def full_backtest(
     rsis: Dict[str, float],
     volatilities: Dict[str, float],
     log_fd: Optional[int] = None,
+    base_chart: Optional[List[StockRow]] = [],
 ) -> History:
 
     s: State = State.init(SEED, MAX_CYCLES - 1)
     s.complete()
+
+    initial_base_price = base_chart[0].close_price if base_chart else 0
+    base_price = {s.date: s.close_price for s in base_chart}
 
     history: List[State] = []
     for c in chart:
@@ -35,6 +39,9 @@ def full_backtest(
         except SeedExhausted:
             s = State.from_(s, c)
             s.complete()
+
+        if initial_base_price:
+            s.base_ror = (base_price[s.date] / initial_base_price) - 1
 
         history.append(s)
 

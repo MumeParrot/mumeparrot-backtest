@@ -51,6 +51,7 @@ message State {
     optional double avg_price   = 17;
     optional double stock_eval  = 18;
     optional double ror         = 19;
+    optional double base_ror    = 20;
 }
 
 message FullBacktestArg {
@@ -61,6 +62,6 @@ message FullBacktestArg {
 }
  
 message HistoryWithErr {
-    repeated State      history = 1;
-    optional string     error   = 2;
+    repeated State      history     = 1;
+    optional string     error       = 2;
 }
