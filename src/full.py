@@ -33,6 +33,7 @@ def full_backtest(
     base_price = {s.date: s.close_price for s in base_chart}
 
     history: List[State] = []
+    prev_base_price = 0
     for c in chart:
         try:
             s = oneday(c, s, config, rsis, volatilities, urates)
@@ -41,7 +42,11 @@ def full_backtest(
             s.complete()
 
         if initial_base_price:
-            s.base_ror = (base_price[s.date] / initial_base_price) - 1
+            try:
+                s.base_ror = (base_price[s.date] / initial_base_price) - 1
+                prev_base_price = base_price[s.date]
+            except KeyError:
+                s.base_ror = (prev_base_price / initial_base_price) - 1
 
         history.append(s)
 
