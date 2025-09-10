@@ -1,20 +1,92 @@
 {
-"UPRO": "SPY",
-"SPXL": "SPY",
-"CURE": "XLV",
-"DFEN": "DJITR",
-"FNGU": "NYFANG",
-"FAS": "XLF",
-"HIBL": "SP500HBETA",
-"LABU": "SPSIBI",
-"MIDU": "IJH",
-"NAIL": "DJSHMB",
-"PILL": "SPSIPH",
-"RETL": "XRT",
-"SOXL": "SOXX",
-"TECL": "XLK",
-"TNA": "RUT",
-"WANT": "XLY",
-"WEBL": "DJINET",
-"TQQQ": "QQQ"
+  "UPRO": {
+    "base": "SPY",
+    "start-year": 1993,
+    "end-year": 2025
+  },
+  "SPXL": {
+    "base": "SPY",
+    "start-year": 1993,
+    "end-year": 2025
+  },
+  "CURE": {
+    "base": "XLV",
+    "start-year": 1998,
+    "end-year": 2025
+  },
+  "DFEN": {
+    "base": "DJITR",
+    "start-year": 2003,
+    "end-year": 2025
+  },
+  "FNGU": {
+    "base": "NYFANG",
+    "start-year": 2017,
+    "end-year": 2025
+  },
+  "FAS": {
+    "base": "XLF",
+    "start-year": 1998,
+    "end-year": 2025
+  },
+  "HIBL": {
+    "base": "SP500HBETA",
+    "start-year": 2011,
+    "end-year": 2025
+  },
+  "LABU": {
+    "base": "SPSIBI",
+    "start-year": 2010,
+    "end-year": 2025
+  },
+  "MIDU": {
+    "base": "IJH",
+    "start-year": 2000,
+    "end-year": 2025
+  },
+  "NAIL": {
+    "base": "DJSHMB",
+    "start-year": 2006,
+    "end-year": 2025
+  },
+  "PILL": {
+    "base": "SPSIPH",
+    "start-year": 2010,
+    "end-year": 2025
+  },
+  "RETL": {
+    "base": "XRT",
+    "start-year": 2006,
+    "end-year": 2025
+  },
+  "SOXL": {
+    "base": "SOXX",
+    "start-year": 2001,
+    "end-year": 2025
+  },
+  "TECL": {
+    "base": "XLK",
+    "start-year": 1998,
+    "end-year": 2025
+  },
+  "TNA": {
+    "base": "RUT",
+    "start-year": 2004,
+    "end-year": 2025
+  },
+  "WANT": {
+    "base": "XLY",
+    "start-year": 1998,
+    "end-year": 2025
+  },
+  "WEBL": {
+    "base": "DJINET",
+    "start-year": 2004,
+    "end-year": 2025
+  },
+  "TQQQ": {
+    "base": "QQQ",
+    "start-year": 1999,
+    "end-year": 2025
+  }
 }

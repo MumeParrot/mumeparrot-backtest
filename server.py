@@ -46,9 +46,33 @@ class MumeBacktestServer(backtest_pb2_grpc.MumeBacktestServerServicer):
     def get_chart(self, ticker: str, start: str, end: str) -> List[StockRow]:
         chart = self.CHARTS[ticker]
 
-        sidx = [int(c.date == start) for c in chart].index(1) if start else 0
+        sidx = (
+            [int(c.date.startswith(start)) for c in chart].index(1)
+            if start
+            else 0
+        )
         eidx = (
-            [int(c.date == end) for c in chart].index(1) if end else len(chart)
+            "".join(str(int(c.date.startswith(end))) for c in chart).rindex("1")
+            if end
+            else len(chart) - 1
+        )
+
+        return chart[sidx : eidx + 1]
+
+    def get_base_chart(
+        self, ticker: str, start: str, end: str
+    ) -> List[StockRow]:
+        chart = self.BASE_CHARTS[ticker]
+
+        sidx = (
+            [int(c.date.startswith(start)) for c in chart].index(1)
+            if start
+            else 0
+        )
+        eidx = (
+            "".join(str(int(c.date.startswith(end))) for c in chart).rindex("1")
+            if end
+            else len(chart) - 1
         )
 
         return chart[sidx : eidx + 1]
@@ -76,6 +100,7 @@ class MumeBacktestServer(backtest_pb2_grpc.MumeBacktestServerServicer):
 
         try:
             chart = self.get_chart(ticker, request.start, request.end)
+            base_chart = self.get_base_chart(ticker, request.start, request.end)
         except ValueError:
             return backtest_pb2.HistoryWithErr(
                 error=f"start='{request.start}', end='{request.end}' not supported"
@@ -95,7 +120,7 @@ class MumeBacktestServer(backtest_pb2_grpc.MumeBacktestServerServicer):
                 self.URATES[ticker],
                 self.RSIS[ticker],
                 self.VOLATILITIS[ticker],
-                base_chart=self.BASE_CHARTS[ticker],
+                base_chart=base_chart,
             )
             history = [state_to_pb2(s) for s in history]
 

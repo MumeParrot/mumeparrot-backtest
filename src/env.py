@@ -14,7 +14,7 @@ TICKER_FILE = os.environ.get("TICKER_FILE", "tickers.json")
 CONFIGS_FILE = os.environ.get("CONFIGS_FILE", "configs.json")
 
 with open(TICKER_FILE, "r") as fd:
-    TICKERS: Dict[str, str] = json.load(fd)
+    TICKERS: Dict[str, str] = { k:v["base"] for k, v in json.load(fd).items() }
 
 with open(CONFIGS_FILE, "r") as fd:
     configs_json = json.load(fd)
