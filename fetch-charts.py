@@ -11,13 +11,12 @@ import matplotlib
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from typing import Dict, List, Tuple
-from datetime import datetime
+from typing import Dict, List, Tuple, Optional
+from datetime import datetime, timedelta
 
-OLDEST = "DATE(1980, 1, 1)"
+OLDEST = "1980-01-01"
 
 gc: gspread.Client = None
-now: datetime = None
 
 
 @click.command()
@@ -29,8 +28,6 @@ now: datetime = None
 )
 @click.option("--graph", "-g", is_flag=True, help="Draw graph for each ticker")
 def main(input, graph):
-    global gc, now
-
     try:
         gc = gspread.service_account(filename="bot.json")
     except Exception as e:
@@ -41,11 +38,9 @@ def main(input, graph):
             print(f"Error getting gspread service account")
             sys.exit(0)
 
-    now = datetime.now()
-
     os.makedirs("charts", exist_ok=True)
 
-    tickers: Dict[str, str] = None
+    tickers: Dict[str, Dict[str, str]] = None
     try:
         with open(input, "r") as fd:
             tickers = json.loads(fd.read())
@@ -53,55 +48,73 @@ def main(input, graph):
         print(f"Error loading {input}")
         sys.exit(0)
 
-    for triple, base in tickers.items():
-        print(f"Processing {triple} ({base})...")
+    for ticker, value in tickers.items():
+        base = value["base"]
 
-        triple_chart = None
+        print(f"Processing {ticker} ({base})...")
+
         try:
-            triple_chart = fetch(triple)
+            chart = pd.read_csv(f"charts/{ticker}.csv")
+            base_chart = pd.read_csv(f"charts/{base}.csv")
+
+            new_chart = fetch(gc, ticker, chart.iloc[-1].Date)
+            if new_chart is not None:
+                chart = pd.concat([chart, new_chart])
+
+            new_base_chart = fetch(gc, base, base_chart.iloc[-1].Date)
+            if new_base_chart is not None:
+                base_chart = pd.concat([base_chart, new_base_chart])
+
+        except FileNotFoundError:
+            chart = fetch(gc, ticker, OLDEST)
+            base_chart = fetch(gc, base, OLDEST)
+
         except KeyError as e:
             raise e
 
-        base_chart = None
-        try:
-            base_chart = fetch(base)
-        except KeyError as e:
-            raise e
-
-        triple_chart.to_csv(f"charts/{triple}.csv", index=False)
+        chart.to_csv(f"charts/{ticker}.csv", index=False)
         base_chart.to_csv(f"charts/{base}.csv", index=False)
 
-        merged, generated = process(triple_chart, base_chart)
+        merged, generated = process(chart, base_chart)
 
         if graph:
-            plot(triple, merged, generated)
+            plot(ticker, merged, generated)
 
         merged_to_csv = [f"{i[0]},{i[1][0]},{i[1][1]}\n" for i in merged]
-        with open(f"charts/{triple}-GEN.csv", "w") as fd:
+        with open(f"charts/{ticker}-GEN.csv", "w") as fd:
             fd.writelines(merged_to_csv)
 
+        value["start-year"] = int(merged[0][0][:4])
+        value["end-year"] = int(merged[-1][0][:4])
 
-def fetch(ticker: str) -> pd.DataFrame:
-    global gc, now
+    with open(input, "w") as fd:
+        fd.write(json.dumps(tickers, indent=2))
+
+
+def fetch(gc: gspread.Client, ticker: str, latest: str) -> Optional[pd.DataFrame]:
+    start = datetime.strptime(latest, "%Y-%m-%d")
+    start += timedelta(days=1)
+
+    end = datetime.now()
+
+    if end < start:
+        return None
 
     tmp = f"{ticker}-{random.randint(0, 10000)}"
-    y, m, d = now.year, now.month, now.day
+    start = f"DATE({start.year}, {start.month}, {start.day})"
+    end = f"DATE({end.year}, {end.month}, {end.day})"
 
     file = gc.open("mumeparrot-backtest-notepad")
     sheet = file.add_worksheet(title=tmp, rows=1, cols=1)
     sheet.update(
+        [[f'=GOOGLEFINANCE("{ticker}", "all", {start}, {end}, "DAILY")']],
         "A1",
-        [
-            [
-                f'=GOOGLEFINANCE("{ticker}", "all", {OLDEST}, DATE({y}, {m}, {d}), "DAILY")'
-            ]
-        ],
         value_input_option="USER_ENTERED",
     )
 
     import time
 
-    wait = 10
+    wait = 5
     while True:
         time.sleep(1)
         if sheet.acell("A1").value == "#N/A":
@@ -109,8 +122,8 @@ def fetch(ticker: str) -> pd.DataFrame:
             if wait > 0:
                 continue
 
-            gc.del_spreadsheet(file.id)
-            raise KeyError(f"cannot fetch data for {ticker}")
+            print(f"No data fetched for {start} ~ {end}")
+            return None
 
         else:
             break
@@ -131,7 +144,7 @@ def fetch(ticker: str) -> pd.DataFrame:
     file.del_worksheet(sheet)
 
     # XRT (base of RETL) has strange row, just remove it
-    if ticker == "XRT":
+    if ticker == "XRT" and latest == OLDEST:
         tmp = df.iloc[2319]
         df.iloc[2319] = df.iloc[2318]
         df.iloc[2319]["Date"] = tmp["Date"]
