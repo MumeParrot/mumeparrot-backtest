@@ -1,7 +1,7 @@
-from typing import List
+from typing import List, Union, Dict, Any
+from dataclasses import dataclass, astuple, fields
 from copy import deepcopy
 from enum import Enum
-from dataclasses import dataclass, astuple
 
 from datetime import datetime
 
@@ -63,6 +63,8 @@ class State:
     stock_eval: float = None
     ror: float = None
 
+    base_ror: float = None
+
     @classmethod
     def init(cls, seed: float, max_cycle: int) -> "State":
         return State(
@@ -83,6 +85,29 @@ class State:
             boxx_seed=0,
             boxx_eval=0,
         )
+
+    @classmethod
+    def _from(cls, source: Union[Dict[str, Any], Any]) -> "State":
+        if isinstance(source, dict):
+            kwargs = {}
+            for field in fields(cls):
+                kwargs[field.name] = source.get(field.name, field.default)
+                if field.name == "status" and isinstance(
+                    kwargs[field.name], int
+                ):
+                    kwargs[field.name] = Status(kwargs[field.name])
+
+            return cls(**kwargs)
+        else:
+            kwargs = {}
+            for field in fields(cls):
+                kwargs[field.name] = getattr(source, field.name, field.default)
+                if field.name == "status" and isinstance(
+                    kwargs[field.name], int
+                ):
+                    kwargs[field.name] = Status(kwargs[field.name])
+
+            return cls(**kwargs)
 
     @classmethod
     def from_(cls, s: "State", c: StockRow) -> "State":
@@ -200,6 +225,8 @@ class State:
         self.ror = (
             self.remaining_seed + self.stock_eval + boxx_profit
         ) / self.principal - 1
+
+        self.base_ror = 0
 
 
 class History(List[State]):

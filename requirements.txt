@@ -4,3 +4,5 @@ scipy
 matplotlib
 gspread
 pandas
+grpcio
+grpcio-tools

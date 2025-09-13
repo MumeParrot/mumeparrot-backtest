@@ -1,3 +1,6 @@
 charts
 .vscode
 */__pycache__
+
+backtest_pb2_grpc.py
+backtest_pb2.py

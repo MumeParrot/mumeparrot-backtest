@@ -14,7 +14,7 @@ TICKER_FILE = os.environ.get("TICKER_FILE", "tickers.json")
 CONFIGS_FILE = os.environ.get("CONFIGS_FILE", "configs.json")
 
 with open(TICKER_FILE, "r") as fd:
-    TICKERS: Dict[str, str] = json.load(fd)
+    TICKERS: Dict[str, str] = { k:v["base"] for k, v in json.load(fd).items() }
 
 with open(CONFIGS_FILE, "r") as fd:
     configs_json = json.load(fd)
@@ -52,9 +52,9 @@ def print_env():
     for k, v in globals().items():
         if k.isupper():
             if k == "BEST_CONFIGS":
-                print(f"{k}:")
+                print(f"  {k}:")
                 for ticker, config in v.items():
-                    print(f"  {ticker}: {config}")
+                    print(f"    {ticker}: {config}")
             else:
                 print(f"{k}: {pformat(v)}")
     print("")

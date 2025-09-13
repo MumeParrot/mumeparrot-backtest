@@ -1,7 +1,7 @@
 import json
 
-from typing import Tuple, Dict
-from dataclasses import dataclass, asdict
+from typing import Tuple, Dict, Union, Any
+from dataclasses import dataclass, asdict, fields
 
 
 @dataclass
@@ -58,18 +58,17 @@ class Config:
     sahm_threshold: float = 1.0
 
     @classmethod
-    def _from(cls, map: Dict[str, Tuple[float, int]]) -> "Config":
-        return Config(
-            term=map.get("term", cls.term),
-            margin=map.get("margin", cls.margin),
-            bullish_rsi=map.get("bullish_rsi", cls.bullish_rsi),
-            burst_urate=map.get("burst_urate", cls.burst_urate),
-            burst_scale=map.get("burst_scale", cls.burst_scale),
-            burst_vol=map.get("burst_vol", cls.burst_vol),
-            sell_base=map.get("sell_base", cls.sell_base),
-            sell_limit=map.get("sell_limit", cls.sell_limit),
-            sahm_threshold=map.get("sahm_threshold", cls.sahm_threshold),
-        )
+    def _from(cls, source: Union[Dict[str, Any], Any]) -> "Config":
+        if isinstance(source, dict):
+            kwargs = {}
+            for field in fields(cls):
+                kwargs[field.name] = source.get(field.name, field.default)
+            return cls(**kwargs)
+        else:
+            kwargs = {}
+            for field in fields(cls):
+                kwargs[field.name] = getattr(source, field.name, field.default)
+            return cls(**kwargs)
 
     def __hash__(self):
         h = 0
