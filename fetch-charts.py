@@ -65,6 +65,11 @@ def main(input, graph):
             if new_base_chart is not None:
                 base_chart = pd.concat([base_chart, new_base_chart])
 
+            if new_chart.iloc[-1].Date != new_base_chart.iloc[-1].Date:
+                print(
+                    f"Chart data deviate: {ticker}[{new_chart.iloc[-1].Date}] vs. {base}[{new_base_chart.iloc[-1].Date}]"
+                )
+
         except FileNotFoundError:
             chart = fetch(gc, ticker, OLDEST)
             base_chart = fetch(gc, base, OLDEST)
@@ -91,7 +96,9 @@ def main(input, graph):
         fd.write(json.dumps(tickers, indent=2))
 
 
-def fetch(gc: gspread.Client, ticker: str, latest: str) -> Optional[pd.DataFrame]:
+def fetch(
+    gc: gspread.Client, ticker: str, latest: str
+) -> Optional[pd.DataFrame]:
     start = datetime.strptime(latest, "%Y-%m-%d")
     start += timedelta(days=1)
 
