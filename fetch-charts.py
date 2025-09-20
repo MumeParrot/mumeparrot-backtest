@@ -2,11 +2,11 @@
 
 import os
 import sys
+import time
 import json
 import random
 import click
 import gspread
-import matplotlib
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -65,7 +65,7 @@ def main(input, graph):
             if new_base_chart is not None:
                 base_chart = pd.concat([base_chart, new_base_chart])
 
-            if new_chart.iloc[-1].Date != new_base_chart.iloc[-1].Date:
+            if chart.iloc[-1].Date != base_chart.iloc[-1].Date:
                 print(
                     f"Chart data deviate: {ticker}[{new_chart.iloc[-1].Date}] vs. {base}[{new_base_chart.iloc[-1].Date}]"
                 )
@@ -91,6 +91,8 @@ def main(input, graph):
 
         value["start-year"] = int(merged[0][0][:4])
         value["end-year"] = int(merged[-1][0][:4])
+
+        time.sleep(10)  # sleep 10 every fetch to avoid rate limit
 
     with open(input, "w") as fd:
         fd.write(json.dumps(tickers, indent=2))
