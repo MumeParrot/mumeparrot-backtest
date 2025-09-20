@@ -4,3 +4,9 @@ indices
 .vscode
 
 build
+.cache
+
+bot.json
+
+logs
+venv
