@@ -26,6 +26,4 @@ RUN mkdir -p build && \
 
 VOLUME ["/mumeparrot-backtest/charts"]
 
-EXPOSE 50051
-
 CMD ["./build/server"]
