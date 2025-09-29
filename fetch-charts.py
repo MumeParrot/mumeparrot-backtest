@@ -15,6 +15,7 @@ from typing import Dict, List, Tuple, Optional
 from datetime import datetime, timedelta
 
 OLDEST = "1980-01-01"
+PWD=os.path.dirname(os.path.abspath(__file__))
 
 gc: gspread.Client = None
 
@@ -24,12 +25,12 @@ gc: gspread.Client = None
     "--input",
     "-i",
     help="json file containing key, value map of 3-times ticker and 1-times base ticker (default: tickers.json)",
-    default="tickers.json",
+    default=f"{PWD}/tickers.json",
 )
 @click.option("--graph", "-g", is_flag=True, help="Draw graph for each ticker")
 def main(input, graph):
     try:
-        gc = gspread.service_account(filename="bot.json")
+        gc = gspread.service_account(filename=f"{PWD}/bot.json")
     except Exception as e:
         print(f"Error getting gspread service account\n${e}")
         sys.exit(0)
@@ -54,8 +55,8 @@ def main(input, graph):
         print(f"Processing {ticker} ({base})...")
 
         try:
-            chart = pd.read_csv(f"charts/{ticker}.csv")
-            base_chart = pd.read_csv(f"charts/{base}.csv")
+            chart = pd.read_csv(f"{PWD}/charts/{ticker}.csv")
+            base_chart = pd.read_csv(f"{PWD}/charts/{base}.csv")
 
             new_chart = fetch(gc, ticker, chart.iloc[-1].Date)
             if new_chart is not None:
@@ -77,8 +78,8 @@ def main(input, graph):
         except KeyError as e:
             raise e
 
-        chart.to_csv(f"charts/{ticker}.csv", index=False)
-        base_chart.to_csv(f"charts/{base}.csv", index=False)
+        chart.to_csv(f"{PWD}/charts/{ticker}.csv", index=False)
+        base_chart.to_csv(f"{PWD}/charts/{base}.csv", index=False)
 
         merged, generated = process(chart, base_chart)
 
@@ -86,7 +87,7 @@ def main(input, graph):
             plot(ticker, merged, generated)
 
         merged_to_csv = [f"{i[0]},{i[1][0]},{i[1][1]}\n" for i in merged]
-        with open(f"charts/{ticker}-GEN.csv", "w") as fd:
+        with open(f"{PWD}/charts/{ticker}-GEN.csv", "w") as fd:
             fd.writelines(merged_to_csv)
 
         value["start-year"] = int(merged[0][0][:4])
