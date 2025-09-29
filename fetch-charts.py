@@ -15,7 +15,7 @@ from typing import Dict, List, Tuple, Optional
 from datetime import datetime, timedelta
 
 OLDEST = "1980-01-01"
-PWD=os.path.dirname(os.path.abspath(__file__))
+PWD = os.path.dirname(os.path.abspath(__file__))
 
 gc: gspread.Client = None
 
@@ -133,6 +133,7 @@ def fetch(
                 continue
 
             print(f"No data fetched for {start} ~ {end}")
+            file.del_worksheet(sheet)
             return None
 
         else:
