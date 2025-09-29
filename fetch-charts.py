@@ -124,7 +124,7 @@ def fetch(
 
     import time
 
-    wait = 5
+    wait = 10
     while True:
         time.sleep(1)
         if sheet.acell("A1").value == "#N/A":
