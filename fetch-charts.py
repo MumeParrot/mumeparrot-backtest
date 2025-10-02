@@ -2,11 +2,11 @@
 
 import os
 import sys
+import time
 import json
 import random
 import click
 import gspread
-import matplotlib
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -15,6 +15,7 @@ from typing import Dict, List, Tuple, Optional
 from datetime import datetime, timedelta
 
 OLDEST = "1980-01-01"
+PWD = os.path.dirname(os.path.abspath(__file__))
 
 gc: gspread.Client = None
 
@@ -24,12 +25,12 @@ gc: gspread.Client = None
     "--input",
     "-i",
     help="json file containing key, value map of 3-times ticker and 1-times base ticker (default: tickers.json)",
-    default="tickers.json",
+    default=f"{PWD}/tickers.json",
 )
 @click.option("--graph", "-g", is_flag=True, help="Draw graph for each ticker")
 def main(input, graph):
     try:
-        gc = gspread.service_account(filename="bot.json")
+        gc = gspread.service_account(filename=f"{PWD}/bot.json")
     except Exception as e:
         print(f"Error getting gspread service account\n${e}")
         sys.exit(0)
@@ -54,8 +55,8 @@ def main(input, graph):
         print(f"Processing {ticker} ({base})...")
 
         try:
-            chart = pd.read_csv(f"charts/{ticker}.csv")
-            base_chart = pd.read_csv(f"charts/{base}.csv")
+            chart = pd.read_csv(f"{PWD}/charts/{ticker}.csv")
+            base_chart = pd.read_csv(f"{PWD}/charts/{base}.csv")
 
             new_chart = fetch(gc, ticker, chart.iloc[-1].Date)
             if new_chart is not None:
@@ -65,6 +66,11 @@ def main(input, graph):
             if new_base_chart is not None:
                 base_chart = pd.concat([base_chart, new_base_chart])
 
+            if chart.iloc[-1].Date != base_chart.iloc[-1].Date:
+                print(
+                    f"Chart data deviate: {ticker}[{new_chart.iloc[-1].Date}] vs. {base}[{new_base_chart.iloc[-1].Date}]"
+                )
+
         except FileNotFoundError:
             chart = fetch(gc, ticker, OLDEST)
             base_chart = fetch(gc, base, OLDEST)
@@ -72,8 +78,8 @@ def main(input, graph):
         except KeyError as e:
             raise e
 
-        chart.to_csv(f"charts/{ticker}.csv", index=False)
-        base_chart.to_csv(f"charts/{base}.csv", index=False)
+        chart.to_csv(f"{PWD}/charts/{ticker}.csv", index=False)
+        base_chart.to_csv(f"{PWD}/charts/{base}.csv", index=False)
 
         merged, generated = process(chart, base_chart)
 
@@ -81,17 +87,21 @@ def main(input, graph):
             plot(ticker, merged, generated)
 
         merged_to_csv = [f"{i[0]},{i[1][0]},{i[1][1]}\n" for i in merged]
-        with open(f"charts/{ticker}-GEN.csv", "w") as fd:
+        with open(f"{PWD}/charts/{ticker}-GEN.csv", "w") as fd:
             fd.writelines(merged_to_csv)
 
         value["start-year"] = int(merged[0][0][:4])
         value["end-year"] = int(merged[-1][0][:4])
 
+        time.sleep(5)  # sleep 5 every fetch to avoid rate limit
+
     with open(input, "w") as fd:
         fd.write(json.dumps(tickers, indent=2))
 
 
-def fetch(gc: gspread.Client, ticker: str, latest: str) -> Optional[pd.DataFrame]:
+def fetch(
+    gc: gspread.Client, ticker: str, latest: str
+) -> Optional[pd.DataFrame]:
     start = datetime.strptime(latest, "%Y-%m-%d")
     start += timedelta(days=1)
 
@@ -114,7 +124,7 @@ def fetch(gc: gspread.Client, ticker: str, latest: str) -> Optional[pd.DataFrame
 
     import time
 
-    wait = 5
+    wait = 10
     while True:
         time.sleep(1)
         if sheet.acell("A1").value == "#N/A":
@@ -123,6 +133,7 @@ def fetch(gc: gspread.Client, ticker: str, latest: str) -> Optional[pd.DataFrame
                 continue
 
             print(f"No data fetched for {start} ~ {end}")
+            file.del_worksheet(sheet)
             return None
 
         else:
