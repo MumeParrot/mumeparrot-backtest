@@ -12,10 +12,20 @@ def oneday(
     VOLATILITY: Dict[str, float],
     URATE: Dict[str, float],
 ) -> State:
-    margin = config.margin
     rsi = RSI[c.date]
     vol = VOLATILITY[c.date]
     urate = URATE[c.date]
+
+    margin = config.margin
+    seed_rate = s.remaining_seed / s.seed
+    seed_rate = (
+        (seed_rate - config.min_seed_rate) / (1 - config.min_seed_rate)
+        if config.min_seed_rate < 1
+        else 0
+    )
+    bullish_rsi = config.bullish_rsi + max(seed_rate, 0) * (
+        100 - config.bullish_rsi
+    )
 
     daily_seed: float = s.seed / config.term
     new_s = State.from_(s, c)
@@ -30,7 +40,7 @@ def oneday(
         if dqtyD < 1:
             raise SeedExhausted
 
-        if rsi > config.bullish_rsi:
+        if rsi > bullish_rsi:
             rate = 0
 
         if (

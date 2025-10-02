@@ -9,6 +9,7 @@ class Description:
     term: str = "number of days to split the seed and buy the stock"
     margin: str = "margin to sell the stock"
     bullish_rsi: str = "rsi threshold to buy the stock"
+    min_seed_rate: str = "min seed rate to adjust the rsi threshold"
     burst_urate: str = (
         "rate of market days under 50 moving average to determine burst buy and "
     )
@@ -24,6 +25,7 @@ class Bounds:
     term: Tuple[int] = (40, 40)
     margin: Tuple[float] = (0.05, 0.15)
     bullish_rsi: Tuple[int] = (60, 100)
+    min_seed_rate: Tuple[float] = (0.5, 1.0)
     burst_urate: Tuple[float] = (0.3, 0.8)
     burst_scale: Tuple[float] = (0.0, 3.0)
     burst_vol: Tuple[int] = (25, 50)
@@ -37,6 +39,7 @@ class Precisions:
     term: int = 1
     margin: float = 0.01
     bullish_rsi: int = 5
+    min_seed_rate: float = 0.1
     burst_urate: float = 0.1
     burst_scale: float = 0.5
     burst_vol: int = 5
@@ -50,6 +53,7 @@ class Config:
     term: int = 40
     margin: float = 0.1  # [0.05:0.15:0.01] : 11
     bullish_rsi: int = 80  # [40:100:5] : 13
+    min_seed_rate: float = 1.0
     burst_urate: float = 0.5
     burst_scale: float = 0.0
     burst_vol: int = 30
