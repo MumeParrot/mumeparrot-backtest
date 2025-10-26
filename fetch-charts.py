@@ -27,8 +27,14 @@ gc: gspread.Client = None
     help="json file containing key, value map of 3-times ticker and 1-times base ticker (default: tickers.json)",
     default=f"{PWD}/tickers.json",
 )
+@click.option(
+    "--ticker",
+    "-t",
+    help="ticker to fetch only (default: None)",
+    default=None
+)
 @click.option("--graph", "-g", is_flag=True, help="Draw graph for each ticker")
-def main(input, graph):
+def main(input, ticker, graph):
     try:
         gc = gspread.service_account(filename=f"{PWD}/bot.json")
     except Exception as e:
@@ -40,6 +46,7 @@ def main(input, graph):
             sys.exit(0)
 
     os.makedirs("charts", exist_ok=True)
+    target_ticker = ticker
 
     tickers: Dict[str, Dict[str, str]] = None
     try:
@@ -50,6 +57,9 @@ def main(input, graph):
         sys.exit(0)
 
     for ticker, value in tickers.items():
+        if target_ticker and target_ticker != ticker:
+            continue
+
         base = value["base"]
 
         print(f"Processing {ticker} ({base})...")
