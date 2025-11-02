@@ -28,7 +28,7 @@ CYCLE_DAYS: int = int(os.environ.get("CYCLE_DAYS", 60))
 SEED: int = int(os.environ.get("SEED", 1000000))
 MAX_CYCLES: int = int(os.environ.get("MAX_CYCLES", 2))
 
-FAIL_PANELTY: int = int(os.environ.get("FAIL_PENALTY", 2))
+FAIL_PENALTY: int = int(os.environ.get("FAIL_PENALTY", 2))
 FAIL_LIMIT: float = float(os.environ.get("FAIL_LIMIT", 0.1))
 
 COMMISSION_RATE: float = float(os.environ.get("COMMISSION_RATE", 0))
