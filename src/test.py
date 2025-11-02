@@ -21,7 +21,7 @@ from .env import (
     CYCLE_DAYS,
     SEED,
     MAX_CYCLES,
-    FAIL_PANELTY,
+    FAIL_PENALTY,
     FAIL_LIMIT,
 )
 
@@ -213,7 +213,7 @@ def test(
     avg_ror_per_year = compute_avg_ror(results)
 
     score = (
-        (1 - FAIL_PANELTY * fail_rate) * avg_ror_per_year * 100
+        (1 - FAIL_PENALTY * fail_rate) * avg_ror_per_year * 100
         if fail_rate < FAIL_LIMIT
         else 0
     )
