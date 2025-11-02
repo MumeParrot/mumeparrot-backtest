@@ -208,6 +208,7 @@ def test(
 
                 _charts.append(extended_chart)
 
+    exhaust_rate = len([r for r in results[0] if not r.sold]) / len(results[0])
     fail_rate = compute_fail_rate(results)
     avg_ror_per_year = compute_avg_ror(results)
 
@@ -218,7 +219,7 @@ def test(
     )
 
     print(
-        f"{ticker}: {config} | {score:.2f} ({avg_ror_per_year * 100:.1f}%, {fail_rate * 100:.1f}%)"
+        f"{ticker}: {config} | {score:.2f} ({avg_ror_per_year * 100:.1f}%, {exhaust_rate * 100:.1f}%, {fail_rate * 100:.1f}%)"
     )
 
     if VERBOSE and NUM_RETIRED > 0.05 * NUM_SIMULATED:

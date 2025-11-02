@@ -133,9 +133,9 @@ class State:
         s = ""
         pfx = (
             f"[{self.date} ({self.elapsed:02})] [{self.cycle}] "
-            + f"seed={self.seed:>6.0f}({self.invested_seed:.0f}+{self.remaining_seed:.0f}) "
+            + f"seed({self.remaining_seed/self.seed*40:02.0f})={self.seed:>6.0f}({self.invested_seed:.0f}+{self.remaining_seed:.0f}) "
         )
-        s = f"{pfx:<52}"
+        s = f"{pfx:<55}"
 
         if BOXX:
             pfx = f"boxx={self.balance:.0f}+{self.boxx_seed:.0f}({self.boxx_eval - self.boxx_seed:.0f})"
