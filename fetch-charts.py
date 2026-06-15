@@ -28,10 +28,7 @@ gc: gspread.Client = None
     default=f"{PWD}/tickers.json",
 )
 @click.option(
-    "--ticker",
-    "-t",
-    help="ticker to fetch only (default: None)",
-    default=None
+    "--ticker", "-t", help="ticker to fetch only (default: None)", default=None
 )
 @click.option("--graph", "-g", is_flag=True, help="Draw graph for each ticker")
 def main(input, ticker, graph):
@@ -72,9 +69,13 @@ def main(input, ticker, graph):
             if new_chart is not None:
                 chart = pd.concat([chart, new_chart])
 
-            new_base_chart = fetch(gc, base, base_chart.iloc[-1].Date)
-            if new_base_chart is not None:
-                base_chart = pd.concat([base_chart, new_base_chart])
+            if base != ticker:
+                new_base_chart = fetch(gc, base, base_chart.iloc[-1].Date)
+                if new_base_chart is not None:
+                    base_chart = pd.concat([base_chart, new_base_chart])
+
+            else:
+                base_chart = chart
 
             if chart.iloc[-1].Date != base_chart.iloc[-1].Date:
                 print(
@@ -83,7 +84,8 @@ def main(input, ticker, graph):
 
         except FileNotFoundError:
             chart = fetch(gc, ticker, OLDEST)
-            base_chart = fetch(gc, base, OLDEST)
+            if base != ticker:
+                base_chart = fetch(gc, base, OLDEST)
 
         except KeyError as e:
             raise e
@@ -91,7 +93,7 @@ def main(input, ticker, graph):
         chart.to_csv(f"{PWD}/charts/{ticker}.csv", index=False)
         base_chart.to_csv(f"{PWD}/charts/{base}.csv", index=False)
 
-        merged, generated = process(chart, base_chart)
+        merged, generated = process(chart, base_chart, value["leverage"])
 
         if graph:
             plot(ticker, merged, generated)
@@ -173,7 +175,9 @@ def fetch(
     return df
 
 
-def process(triple: pd.DataFrame, base: pd.DataFrame) -> Tuple[List]:
+def process(
+    triple: pd.DataFrame, base: pd.DataFrame, leverage: int
+) -> Tuple[List]:
 
     init = base.iloc[0]
     date, o_price, c_price = (
@@ -183,7 +187,7 @@ def process(triple: pd.DataFrame, base: pd.DataFrame) -> Tuple[List]:
     )
 
     rates: List[Tuple[str, Tuple[float]]] = [
-        (date, (0, 3 * (c_price - o_price) / o_price))
+        (date, (0, leverage * (c_price - o_price) / o_price))
     ]
     for i in range(1, len(base)):
         prev_c_price = base.iloc[i - 1]["Close"]
@@ -198,7 +202,7 @@ def process(triple: pd.DataFrame, base: pd.DataFrame) -> Tuple[List]:
         o_rate = (o_price - prev_c_price) / prev_c_price
         c_rate = (c_price - o_price) / o_price
 
-        rates.append((date, (3 * o_rate, 3 * c_rate)))
+        rates.append((date, (leverage * o_rate, leverage * c_rate)))
 
     ref_init = triple.iloc[0]
     ref_init_date, ref_o_price = (

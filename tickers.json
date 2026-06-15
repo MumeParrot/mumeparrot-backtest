@@ -1,92 +1,244 @@
 {
   "UPRO": {
     "base": "SPY",
+    "leverage": 3,
     "start-year": 1993,
     "end-year": 2025
   },
   "SPXL": {
     "base": "SPY",
+    "leverage": 3,
     "start-year": 1993,
     "end-year": 2025
   },
   "CURE": {
     "base": "XLV",
+    "leverage": 3,
     "start-year": 1998,
     "end-year": 2025
   },
   "DFEN": {
     "base": "DJITR",
+    "leverage": 3,
     "start-year": 2003,
     "end-year": 2025
   },
   "FNGU": {
     "base": "NYFANG",
+    "leverage": 3,
     "start-year": 2017,
     "end-year": 2025
   },
   "FAS": {
     "base": "XLF",
+    "leverage": 3,
     "start-year": 1998,
     "end-year": 2025
   },
   "HIBL": {
     "base": "SP500HBETA",
+    "leverage": 3,
     "start-year": 2011,
     "end-year": 2025
   },
   "LABU": {
     "base": "SPSIBI",
+    "leverage": 3,
     "start-year": 2010,
     "end-year": 2025
   },
   "MIDU": {
     "base": "IJH",
+    "leverage": 3,
     "start-year": 2000,
     "end-year": 2025
   },
   "NAIL": {
     "base": "DJSHMB",
+    "leverage": 3,
     "start-year": 2006,
     "end-year": 2025
   },
   "PILL": {
     "base": "SPSIPH",
+    "leverage": 3,
     "start-year": 2010,
     "end-year": 2025
   },
   "RETL": {
     "base": "XRT",
+    "leverage": 3,
     "start-year": 2006,
     "end-year": 2025
   },
   "SOXL": {
     "base": "SOXX",
+    "leverage": 3,
     "start-year": 2001,
     "end-year": 2025
   },
   "TECL": {
     "base": "XLK",
+    "leverage": 3,
     "start-year": 1998,
     "end-year": 2025
   },
   "TNA": {
     "base": "RUT",
+    "leverage": 3,
     "start-year": 2004,
     "end-year": 2025
   },
   "WANT": {
     "base": "XLY",
+    "leverage": 3,
     "start-year": 1998,
     "end-year": 2025
   },
   "WEBL": {
     "base": "DJINET",
+    "leverage": 3,
     "start-year": 2004,
     "end-year": 2025
   },
   "TQQQ": {
     "base": "QQQ",
+    "leverage": 3,
     "start-year": 1999,
     "end-year": 2025
+  },
+  "KORU": {
+    "base": "EWY",
+    "leverage": 3,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "BOXX": {
+    "base": "BOXX",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "VOO": {
+    "base": "VOO",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "USD": {
+    "base": "DJUSSC",
+    "leverage": 2,
+    "start_year": 1900,
+    "end_year": 1900,
+    "start-year": 2003,
+    "end-year": 2026
+  },
+  "QLD": {
+    "base": "QQQ",
+    "leverage": 2,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "SSO": {
+    "base": "SPY",
+    "leverage": 2,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "ARKK": {
+    "base": "ARKK",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "MAGS": {
+    "base": "MAGS",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "URA": {
+    "base": "URA",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "SOXX": {
+    "base": "SOXX",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "XLK": {
+    "base": "XLK",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "VGT": {
+    "base": "VGT",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "QQQ": {
+    "base": "QQQ",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "VTI": {
+    "base": "VTI",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "IOO": {
+    "base": "IOO",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "SCHD": {
+    "base": "SCHD",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "GLD": {
+    "base": "GLD",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "SLV": {
+    "base": "SLV",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "BRK_B": {
+    "base": "BRK_B",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "TSLL": {
+    "base": "TSLA",
+    "leverage": 2,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "JEPI": {
+    "base": "JEPI",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
+  },
+  "JEPQ": {
+    "base": "JEPQ",
+    "leverage": 1,
+    "start_year": 1900,
+    "end_year": 1900
   }
 }
