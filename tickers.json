@@ -1,92 +1,242 @@
 {
-  "UPRO": {
-    "base": "SPY",
-    "start-year": 1993,
-    "end-year": 2025
+  "ARKK": {
+    "base": "ARKK",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1993
   },
-  "SPXL": {
-    "base": "SPY",
-    "start-year": 1993,
-    "end-year": 2025
+  "BOXX": {
+    "base": "BOXX",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 2000
+  },
+  "BRK.B": {
+    "base": "BRK.B",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1996
   },
   "CURE": {
     "base": "XLV",
-    "start-year": 1998,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 1998
   },
   "DFEN": {
     "base": "DJITR",
-    "start-year": 2003,
-    "end-year": 2025
-  },
-  "FNGU": {
-    "base": "NYFANG",
-    "start-year": 2017,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2003
   },
   "FAS": {
     "base": "XLF",
-    "start-year": 1998,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 1998
+  },
+  "FNGU": {
+    "base": "NYFANG",
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2017
+  },
+  "GLD": {
+    "base": "GLD",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1999
   },
   "HIBL": {
     "base": "SP500HBETA",
-    "start-year": 2011,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2011
+  },
+  "IOO": {
+    "base": "IOO",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1999
+  },
+  "JEPI": {
+    "base": "JEPI",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 2020
+  },
+  "JEPQ": {
+    "base": "JEPQ",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 2022
+  },
+  "KORU": {
+    "base": "EWY",
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2000
   },
   "LABU": {
     "base": "SPSIBI",
-    "start-year": 2010,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2010
+  },
+  "MAGS": {
+    "base": "MAGS",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1993
   },
   "MIDU": {
     "base": "IJH",
-    "start-year": 2000,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2000
   },
   "NAIL": {
     "base": "DJSHMB",
-    "start-year": 2006,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2006
   },
   "PILL": {
     "base": "SPSIPH",
-    "start-year": 2010,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2010
+  },
+  "QLD": {
+    "base": "QQQ",
+    "end-year": 2026,
+    "leverage": 2,
+    "start-year": 1999
+  },
+  "QQQ": {
+    "base": "QQQ",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1999
   },
   "RETL": {
     "base": "XRT",
-    "start-year": 2006,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2006
+  },
+  "SCHD": {
+    "base": "SCHD",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1999
+  },
+  "SLV": {
+    "base": "SLV",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1999
   },
   "SOXL": {
     "base": "SOXX",
-    "start-year": 2001,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2001
+  },
+  "SOXX": {
+    "base": "SOXX",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 2001
+  },
+  "SPXL": {
+    "base": "SPY",
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 1993
+  },
+  "SSO": {
+    "base": "SPY",
+    "end-year": 2026,
+    "leverage": 2,
+    "start-year": 1993
   },
   "TECL": {
     "base": "XLK",
-    "start-year": 1998,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 1998
   },
   "TNA": {
     "base": "RUT",
-    "start-year": 2004,
-    "end-year": 2025
-  },
-  "WANT": {
-    "base": "XLY",
-    "start-year": 1998,
-    "end-year": 2025
-  },
-  "WEBL": {
-    "base": "DJINET",
-    "start-year": 2004,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2004
   },
   "TQQQ": {
     "base": "QQQ",
-    "start-year": 1999,
-    "end-year": 2025
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 1999
+  },
+  "TSLL": {
+    "base": "TSLA",
+    "end-year": 2026,
+    "leverage": 2,
+    "start-year": 2010
+  },
+  "UPRO": {
+    "base": "SPY",
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 1993
+  },
+  "URA": {
+    "base": "URA",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1993
+  },
+  "USD": {
+    "base": "DJUSSC",
+    "end-year": 2026,
+    "leverage": 2,
+    "start-year": 2003
+  },
+  "VGT": {
+    "base": "VGT",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1998
+  },
+  "VOO": {
+    "base": "VOO",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 2000
+  },
+  "VTI": {
+    "base": "VTI",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1999
+  },
+  "WANT": {
+    "base": "XLY",
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 1999
+  },
+  "WEBL": {
+    "base": "DJINET",
+    "end-year": 2026,
+    "leverage": 3,
+    "start-year": 2004
+  },
+  "XLK": {
+    "base": "XLK",
+    "end-year": 2026,
+    "leverage": 1,
+    "start-year": 1998
   }
 }

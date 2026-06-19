@@ -16,5 +16,6 @@
     "TNA": { "margin": 0.06, "bullish_rsi": 70, "burst_urate": 0.5, "burst_scale": 2.5, "burst_vol": 30, "sell_base": 0.4, "sell_limit": 0.5 },
     "WANT": { "margin": 0.05, "bullish_rsi": 70, "burst_urate": 0.4, "burst_scale": 1.0, "burst_vol": 30, "sell_base": 0.3, "sell_limit": 0.6 },
     "WEBL": { "margin": 0.09, "bullish_rsi": 90, "burst_urate": 0.7, "burst_scale": 2.5, "burst_vol": 40, "sell_base": 0.0, "sell_limit": 0.9 },
-    "TQQQ": { "margin": 0.08, "bullish_rsi": 75, "burst_urate": 0.7, "burst_scale": 2.0, "burst_vol": 45, "sell_base": 0.4, "sell_limit": 0.7 }
+    "TQQQ": { "margin": 0.08, "bullish_rsi": 75, "burst_urate": 0.7, "burst_scale": 2.0, "burst_vol": 45, "sell_base": 0.4, "sell_limit": 0.7 },
+    "KORU": { "margin": 0.08, "bullish_rsi": 75, "burst_urate": 0.7, "burst_scale": 2.0, "burst_vol": 45, "sell_base": 0.4, "sell_limit": 0.7 }
 }
