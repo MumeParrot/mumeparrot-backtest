@@ -4,6 +4,7 @@
 #include "src/env.h"
 #include "src/data.h"
 #include "src/full.h"
+#include "src/dca.h"
 #include <iostream>
 #include <memory>
 
@@ -157,20 +158,34 @@ public:
             config.sell_base = pb_config.sell_base();
             config.sell_limit = pb_config.sell_limit();
             config.sahm_threshold = pb_config.sahm_threshold();
+            if (pb_config.rsi_threshold() > 0) config.rsi_threshold = pb_config.rsi_threshold();
+            if (pb_config.buy_splits() > 0) config.buy_splits = pb_config.buy_splits();
         } else {
             config = BEST_CONFIGS[ticker];
         }
 
         try {
-            auto history = full_backtest(
-                config,
-                chart,
-                this->URATES[ticker],
-                this->RSIS[ticker],
-                this->VOLATILITIES[ticker],
-                nullptr,
-                base_chart
-            );
+            std::vector<State> history;
+            bool is_dca = false;
+            auto lev_it = LEVERAGES.find(ticker);
+            if (lev_it != LEVERAGES.end() && lev_it->second < 3) {
+                is_dca = true;
+            }
+
+            if (is_dca) {
+                auto rsi_dict = compute_dca_rsi(this->CHARTS[ticker]);
+                history = run_dca_backtest(chart, rsi_dict, config);
+            } else {
+                history = full_backtest(
+                    config,
+                    chart,
+                    this->URATES[ticker],
+                    this->RSIS[ticker],
+                    this->VOLATILITIES[ticker],
+                    nullptr,
+                    base_chart
+                );
+            }
 
             auto* pb_history = response->mutable_history();
             for (const auto& state : history) {

@@ -33,6 +33,13 @@ Config Config::from_map(const std::unordered_map<std::string, double>& source) {
     it = source.find("sahm_threshold");
     if (it != source.end()) config.sahm_threshold = it->second;
     
+    it = source.find("rsi_threshold");
+    if (it != source.end()) config.rsi_threshold = it->second;
+    
+    it = source.find("buy_splits");
+    if (it != source.end()) config.buy_splits = static_cast<int>(it->second);
+
+    
     return config;
 }
 
@@ -47,6 +54,8 @@ std::size_t Config::hash() const {
     h = std::hash<double>{}(sell_base) ^ (h << 1);
     h = std::hash<double>{}(sell_limit) ^ (h << 1);
     h = std::hash<double>{}(sahm_threshold) ^ (h << 1);
+    h = std::hash<double>{}(rsi_threshold) ^ (h << 1);
+    h = std::hash<int>{}(buy_splits) ^ (h << 1);
     return h;
 }
 
@@ -62,7 +71,9 @@ std::string Config::to_string() const {
     oss << "burst_vol: " << burst_vol << ", ";
     oss << "sell_base: " << sell_base << ", ";
     oss << "sell_limit: " << sell_limit << ", ";
-    oss << "sahm_threshold: " << sahm_threshold;
+    oss << "sahm_threshold: " << sahm_threshold << ", ";
+    oss << "rsi_threshold: " << rsi_threshold << ", ";
+    oss << "buy_splits: " << buy_splits;
     
     return oss.str();
 }
@@ -76,5 +87,7 @@ bool Config::operator==(const Config& other) const {
            burst_vol == other.burst_vol &&
            sell_base == other.sell_base &&
            sell_limit == other.sell_limit &&
-           sahm_threshold == other.sahm_threshold;
+           sahm_threshold == other.sahm_threshold &&
+           rsi_threshold == other.rsi_threshold &&
+           buy_splits == other.buy_splits;
 }

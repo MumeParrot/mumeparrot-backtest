@@ -19,6 +19,8 @@ message Config {
     double sell_base        = 7;
     double sell_limit       = 8;
     double sahm_threshold   = 9;
+    double rsi_threshold    = 10;
+    int32 buy_splits        = 11;
 }
 
 enum Status {

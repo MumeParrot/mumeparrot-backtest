@@ -13,6 +13,7 @@ extern std::string CONFIGS_FILE;
 
 extern std::unordered_map<std::string, std::string> TICKERS;
 extern std::unordered_map<std::string, Config> BEST_CONFIGS;
+extern std::unordered_map<std::string, int> LEVERAGES;
 
 extern bool DEBUG;
 extern bool VERBOSE;

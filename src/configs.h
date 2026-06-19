@@ -50,6 +50,8 @@ struct Config {
     double sell_base = 0.0;
     double sell_limit = 1.0;
     double sahm_threshold = 1.0;
+    double rsi_threshold = 50.0;
+    int buy_splits = 5;
 
     static Config from_map(const std::unordered_map<std::string, double>& source);
     

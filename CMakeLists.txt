@@ -68,6 +68,7 @@ set(CORE_SOURCES
     src/sim.cpp
     src/full.cpp
     src/test.cpp
+    src/dca.cpp
 )
 
 # Create core library

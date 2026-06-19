@@ -16,6 +16,7 @@ std::string CONFIGS_FILE = "configs.json";
 
 std::unordered_map<std::string, std::string> TICKERS;
 std::unordered_map<std::string, Config> BEST_CONFIGS;
+std::unordered_map<std::string, int> LEVERAGES;
 
 bool DEBUG = false;
 bool VERBOSE = false;
@@ -36,6 +37,7 @@ double BOXX_UNIT = 0.125;
 double BOXX_IR = 0.045;
 
 bool TEST_MODE = false;
+
 
 std::string get_env_var(const std::string& name, const std::string& default_val = "") {
     const char* val = std::getenv(name.c_str());
@@ -74,7 +76,11 @@ void init_env() {
     ticker_file >> ticker_json;
     
     for (auto& [key, value] : ticker_json.items()) {
+        if (!value.contains("leverage")) {
+            throw std::runtime_error("Missing leverage field for ticker: " + key);
+        }
         TICKERS[key] = value["base"];
+        LEVERAGES[key] = value["leverage"].get<int>();
     }
     
     // Load configs
