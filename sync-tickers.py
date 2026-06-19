@@ -20,10 +20,10 @@ import click
 )
 def main(introduced, output):
     with open(output, "r") as fd:
-        old_tickers = json.load(fd)
+        old_tickers = {k.replace("_", "."): v for k, v in json.load(fd).items()}
 
     with open(introduced, "r") as fd:
-        updated_tickers = json.load(fd)
+        updated_tickers = [t.replace("_", ".") for t in json.load(fd)]
 
     new_tickers = copy.deepcopy(old_tickers)
     for t in updated_tickers:
@@ -35,12 +35,12 @@ def main(introduced, output):
             new_tickers[t] = {
                 "base": base or t,
                 "leverage": leverage,
-                "start_year": 1900,
-                "end_year": 1900,
+                "start-year": 1900,
+                "end-year": 1900,
             }
 
     with open(output, "w") as fd:
-        json.dump(new_tickers, fd)
+        json.dump(new_tickers, fd, indent=4, sort_keys=True, ensure_ascii=False)
 
 
 if __name__ == "__main__":

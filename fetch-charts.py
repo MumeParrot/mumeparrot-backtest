@@ -86,6 +86,8 @@ def main(input, ticker, graph):
             chart = fetch(gc, ticker, OLDEST)
             if base != ticker:
                 base_chart = fetch(gc, base, OLDEST)
+            else:
+                base_chart = chart
 
         except KeyError as e:
             raise e
