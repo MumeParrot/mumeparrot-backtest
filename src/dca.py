@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Tuple, Dict, Any, Optional
 
 from .const import StockRow
-from .env import COMMISSION_RATE
+from .env import COMMISSION_RATE, SCALE_BY_PORTFOLIO
 
 
 @dataclass
@@ -18,6 +18,7 @@ class DcaDailyState:
     ror: float
     commission_paid: float
     bought: bool = False
+    twr: float = 0.0
 
 
 def compute_dca_rsi(full_chart: List[StockRow]) -> Dict[str, float]:
@@ -101,6 +102,12 @@ def run_dca_backtest(
     base_invested = 0.0
     base_comm = 0.0
     
+    # TWR state
+    strat_twr = 0.0
+    base_twr = 0.0
+    strat_val_post_prev = None
+    base_val_post_prev = None
+    
     prev_month = None
     prev_year = None
     current_wage = monthly_wage
@@ -122,11 +129,27 @@ def run_dca_backtest(
             
         # 1. Process wage addition
         if is_new_month:
+            # TWR calculation for the sub-period that just ended
+            if strat_val_post_prev is not None:
+                strat_val_pre = strat_cash + strat_shares * c.price
+                r_strat = (strat_val_pre / strat_val_post_prev) - 1.0 if strat_val_post_prev > 0 else 0.0
+                strat_twr = (1.0 + strat_twr) * (1.0 + r_strat) - 1.0
+                
+                base_val_pre = base_cash + base_shares * c.price
+                r_base = (base_val_pre / base_val_post_prev) - 1.0 if base_val_post_prev > 0 else 0.0
+                base_twr = (1.0 + base_twr) * (1.0 + r_base) - 1.0
+
             strat_invested += current_wage
             strat_cash += current_wage
             
-            # Recalculate the fixed buy amount for this month using the new cash balance
-            strat_buy_amount = strat_cash / max(1, buy_splits)
+            # Recalculate fixed buy amount
+            if SCALE_BY_PORTFOLIO:
+                # Based on current portfolio value (cash + shares * price)
+                current_portfolio_val = strat_cash + strat_shares * c.price
+                strat_buy_amount = current_portfolio_val / max(1, buy_splits)
+            else:
+                # Based on cash only
+                strat_buy_amount = strat_cash / max(1, buy_splits)
             
             base_invested += current_wage
             base_cash += current_wage
@@ -138,6 +161,10 @@ def run_dca_backtest(
                 base_shares += qty
                 base_cash -= base_cash  # spent all
                 base_comm += comm
+                
+            # Update post-addition base/strategy values for tracking TWR
+            strat_val_post_prev = strat_cash + strat_shares * c.price
+            base_val_post_prev = base_cash + base_shares * c.price
         
         # 2. Strategy buys if RSI < rsi_threshold
         rsi_val = rsi_dict.get(c.date, 50.0)
@@ -152,7 +179,22 @@ def run_dca_backtest(
                 strat_comm += comm
                 strat_bought = True
                 
-        # 3. Record daily states
+        # 3. Calculate daily TWR
+        if strat_val_post_prev is not None:
+            strat_val_daily = strat_cash + strat_shares * c.close_price
+            r_strat_daily = (strat_val_daily / strat_val_post_prev) - 1.0 if strat_val_post_prev > 0 else 0.0
+            strat_twr_daily = (1.0 + strat_twr) * (1.0 + r_strat_daily) - 1.0
+        else:
+            strat_twr_daily = 0.0
+
+        if base_val_post_prev is not None:
+            base_val_daily = base_cash + base_shares * c.close_price
+            r_base_daily = (base_val_daily / base_val_post_prev) - 1.0 if base_val_post_prev > 0 else 0.0
+            base_twr_daily = (1.0 + base_twr) * (1.0 + r_base_daily) - 1.0
+        else:
+            base_twr_daily = 0.0
+
+        # 4. Record daily states
         strat_val = strat_cash + strat_shares * c.close_price
         strat_ror = (strat_val / strat_invested - 1.0) if strat_invested > 0 else 0.0
         strategy_history.append(DcaDailyState(
@@ -166,7 +208,8 @@ def run_dca_backtest(
             value=strat_val,
             ror=strat_ror,
             commission_paid=strat_comm,
-            bought=strat_bought
+            bought=strat_bought,
+            twr=strat_twr_daily
         ))
         
         base_val = base_cash + base_shares * c.close_price
@@ -181,7 +224,8 @@ def run_dca_backtest(
             invested=base_invested,
             value=base_val,
             ror=base_ror,
-            commission_paid=base_comm
+            commission_paid=base_comm,
+            twr=base_twr_daily
         ))
         
         prev_month = month

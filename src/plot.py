@@ -159,8 +159,10 @@ def plot_dca(ticker: str, start: str, end: str, strategy_history: list, baseline
     ax1.plot([s.close_price for s in strategy_history], color="black", label="Stock Price", alpha=0.5)
 
     # Plot rates of return on right axis (ax2)
-    ax2.plot([s.ror * 100 for s in strategy_history], color="blue", label="Strategy RoR (%)")
-    ax2.plot([s.ror * 100 for s in baseline_history], color="green", linestyle="--", label="Baseline RoR (%)")
+    ax2.plot([s.ror * 100 for s in strategy_history], color="blue", label="Strategy MWR (RoR %)")
+    ax2.plot([s.twr * 100 for s in strategy_history], color="indigo", label="Strategy TWR (%)", alpha=0.8)
+    ax2.plot([s.ror * 100 for s in baseline_history], color="green", linestyle="--", label="Baseline MWR (RoR %)")
+    ax2.plot([s.twr * 100 for s in baseline_history], color="darkgreen", linestyle=":", label="Baseline TWR (%)", alpha=0.8)
 
     xticks, xticklabels = get_ticks(dates, granul=Granul.Month6)
     ax1.set_xticks(xticks)

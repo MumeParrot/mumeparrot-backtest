@@ -200,8 +200,14 @@ def main():
                     print(
                         f"\tStrategy Final Value: {strat_history[-1].value:.2f}"
                     )
+                    strat_twr_ann = (1.0 + strat_history[-1].twr) ** (365.0 / n_days) - 1.0
+                    base_twr_ann = (1.0 + base_history[-1].twr) ** (365.0 / n_days) - 1.0
+
                     print(
-                        f"\tStrategy RoR: {strat_history[-1].ror * 100:.2f}% ({strat_avg_ir * 100:.2f}% annualized)"
+                        f"\tStrategy RoR (Money-Weighted): {strat_history[-1].ror * 100:.2f}% ({strat_avg_ir * 100:.2f}% annualized)"
+                    )
+                    print(
+                        f"\tStrategy TWR (Time-Weighted): {strat_history[-1].twr * 100:.2f}% ({strat_twr_ann * 100:.2f}% annualized)"
                     )
                     n_bought = sum(1 for s in strat_history if s.bought)
                     bought_pct = (n_bought / len(strat_history)) * 100.0 if strat_history else 0.0
@@ -212,7 +218,10 @@ def main():
                         f"\tBaseline Final Value: {base_history[-1].value:.2f}"
                     )
                     print(
-                        f"\tBaseline RoR: {base_history[-1].ror * 100:.2f}% ({base_avg_ir * 100:.2f}% annualized)"
+                        f"\tBaseline RoR (Money-Weighted): {base_history[-1].ror * 100:.2f}% ({base_avg_ir * 100:.2f}% annualized)"
+                    )
+                    print(
+                        f"\tBaseline TWR (Time-Weighted): {base_history[-1].twr * 100:.2f}% ({base_twr_ann * 100:.2f}% annualized)"
                     )
 
                     if GRAPH:
