@@ -14,12 +14,14 @@ TICKER_FILE = os.environ.get("TICKER_FILE", "tickers.json")
 CONFIGS_FILE = os.environ.get("CONFIGS_FILE", "configs.json")
 
 with open(TICKER_FILE, "r") as fd:
-    TICKERS: Dict[str, str] = { k:v["base"] for k, v in json.load(fd).items() }
+    ticker_data = json.load(fd)
+    TICKERS: Dict[str, str] = { k:v["base"] for k, v in ticker_data.items() }
+    LEVERAGES: Dict[str, int] = { k:v["leverage"] for k, v in ticker_data.items() }
 
 with open(CONFIGS_FILE, "r") as fd:
     configs_json = json.load(fd)
 
-    BEST_CONFIGS = {k: Config._from(configs_json[k]) for k in TICKERS.keys()}
+    BEST_CONFIGS = {k: Config._from(configs_json[k]) if k in configs_json else Config() for k in TICKERS.keys()}
 
 DEBUG: bool = bool(int(os.environ.get("DEBUG", 0)))
 VERBOSE: bool = bool(int(os.environ.get("VERBOSE", 0)))

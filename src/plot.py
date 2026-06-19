@@ -1,8 +1,16 @@
 import os
 import re
+import sys
 import matplotlib
 from typing import List, Tuple
 from enum import Enum
+
+# If running headlessly/non-interactively, switch to Agg backend immediately to avoid hanging on GUI display initialization
+if not sys.stdout.isatty():
+    try:
+        matplotlib.use("Agg")
+    except Exception:
+        pass
 
 import matplotlib.pyplot as plt
 
@@ -48,13 +56,15 @@ def get_ticks(dates: List[str], granul: Granul = Granul.Year):
 
 
 def plot_chart(ticker: str, start: str, end: str):
-    matplotlib.use("TkAgg")
-
     chart = read_chart(ticker, start, end)
 
     dates = [s.date for s in chart]
 
-    fig = plt.figure(figsize=(20, 8))
+    try:
+        fig = plt.figure(figsize=(20, 8))
+    except Exception:
+        plt.switch_backend("Agg")
+        fig = plt.figure(figsize=(20, 8))
     ax1 = fig.add_subplot(111)
 
     ax1.plot([c.close_price for c in chart], color="black", label="price")
@@ -67,12 +77,17 @@ def plot_chart(ticker: str, start: str, end: str):
     ax1.legend()
 
     ax1.grid(axis="both")
-    plt.show()
+    
+    if matplotlib.get_backend().lower() == "agg":
+        os.makedirs("figures", exist_ok=True)
+        filepath = f"figures/{ticker}_chart_{start}_{end}.png"
+        plt.savefig(filepath, bbox_inches="tight")
+        print(f"[+] Saved plot to {filepath}")
+    else:
+        plt.show()
 
 
 def plot_full(ticker: str, start: str, end: str, history: List[State]):
-    matplotlib.use("TkAgg")
-
     dates = [s.date for s in history]
     exhausted = [
         i
@@ -88,7 +103,11 @@ def plot_full(ticker: str, start: str, end: str, history: List[State]):
 
     ymax = max(s.close_price for s in history)
 
-    fig = plt.figure(figsize=(20, 8))
+    try:
+        fig = plt.figure(figsize=(20, 8))
+    except Exception:
+        plt.switch_backend("Agg")
+        fig = plt.figure(figsize=(20, 8))
     ax1 = fig.add_subplot(111)
     ax2 = ax1.twinx()
 
@@ -115,8 +134,51 @@ def plot_full(ticker: str, start: str, end: str, history: List[State]):
     ax2.legend(loc="upper right")
 
     ax1.grid(axis="both")
-    plt.show()
-    # plt.savefig(
-    #     f"figures/{ticker}:{history[0].date}-{history[-1].date}.png",
-    #     bbox_inches="tight",
-    # )
+    
+    if matplotlib.get_backend().lower() == "agg":
+        os.makedirs("figures", exist_ok=True)
+        filepath = f"figures/{ticker}_full_{start}_{end}.png"
+        plt.savefig(filepath, bbox_inches="tight")
+        print(f"[+] Saved plot to {filepath}")
+    else:
+        plt.show()
+
+
+def plot_dca(ticker: str, start: str, end: str, strategy_history: list, baseline_history: list):
+    dates = [s.date for s in strategy_history]
+
+    try:
+        fig = plt.figure(figsize=(20, 8))
+    except Exception:
+        plt.switch_backend("Agg")
+        fig = plt.figure(figsize=(20, 8))
+    ax1 = fig.add_subplot(111)
+    ax2 = ax1.twinx()
+
+    # Plot stock price on left axis (ax1)
+    ax1.plot([s.close_price for s in strategy_history], color="black", label="Stock Price", alpha=0.5)
+
+    # Plot rates of return on right axis (ax2)
+    ax2.plot([s.ror * 100 for s in strategy_history], color="blue", label="Strategy RoR (%)")
+    ax2.plot([s.ror * 100 for s in baseline_history], color="green", linestyle="--", label="Baseline RoR (%)")
+
+    xticks, xticklabels = get_ticks(dates, granul=Granul.Month6)
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels(xticklabels)
+
+    ax1.set_title(f"{ticker} DCA Simulation ({dates[0]} ~ {dates[-1]})")
+    ax1.legend(loc="upper left")
+    ax2.legend(loc="upper right")
+
+    ax1.set_ylabel("Stock price ($)")
+    ax2.set_ylabel("Rate of return (RoR %)")
+
+    ax1.grid(axis="both")
+    
+    if matplotlib.get_backend().lower() == "agg":
+        os.makedirs("figures", exist_ok=True)
+        filepath = f"figures/{ticker}_dca_{start}_{end}.png"
+        plt.savefig(filepath, bbox_inches="tight")
+        print(f"[+] Saved plot to {filepath}")
+    else:
+        plt.show()

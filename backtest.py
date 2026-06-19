@@ -22,6 +22,7 @@ from src.env import (
     BOXX,
     TEST_MODE,
     print_env,
+    LEVERAGES,
 )
 
 stop = [False]
@@ -128,23 +129,121 @@ def main():
 
             elif mode.startswith("f"):
                 ticker = get_arg("ticker", tpe=str, default="SOXL")
-                config: str = get_arg("config", tpe=str, default="best")
 
-                if config != "best":
-                    for field, value in asdict(Config()).items():
-                        default_val = getattr(BEST_CONFIGS[ticker], field)
-                        config_fields[field] = get_arg(
-                            field, tpe=type(value), default=default_val
+                is_dca = LEVERAGES.get(ticker) < 3
+
+                if is_dca:
+                    start_date = get_arg(
+                        "start_date", tpe=str, default=START or "2020-01-01"
+                    )
+                    end_date = get_arg(
+                        "end_date", tpe=str, default=END or "2026-01-01"
+                    )
+                    rsi_threshold = get_arg(
+                        "rsi_threshold", tpe=float, default=50.0
+                    )
+                    buy_splits = get_arg(
+                        "buy_splits",
+                        tpe=int,
+                        default=5,
+                        explain="how to split remaining seed for buying stock at a time",
+                    )
+                    monthly_wage = get_arg(
+                        "monthly_wage", tpe=float, default=1000.0
+                    )
+                    inflation_rate = get_arg(
+                        "inflation_rate", tpe=float, default=0.03
+                    )
+
+                    from datetime import datetime
+                    from src.data import read_chart
+                    from src.dca import compute_dca_rsi, run_dca_backtest
+                    from src.plot import plot_dca
+
+                    full_chart = read_chart(ticker, "", "", test_mode=TEST_MODE)
+                    chart = [c for c in full_chart if start_date <= c.date <= end_date]
+
+                    if not chart:
+                        print(
+                            f"[-] No stock data found for ticker '{ticker}' in range {start_date} ~ {end_date}"
+                        )
+                        continue
+
+                    rsi_dict = compute_dca_rsi(full_chart)
+                    strat_history, base_history = run_dca_backtest(
+                        chart,
+                        rsi_dict,
+                        rsi_threshold,
+                        buy_splits,
+                        monthly_wage,
+                        inflation_rate,
+                    )
+
+                    n_days = (
+                        datetime.strptime(chart[-1].date, "%Y-%m-%d")
+                        - datetime.strptime(chart[0].date, "%Y-%m-%d")
+                    ).days
+                    if n_days <= 0:
+                        n_days = 1
+
+                    strat_avg_ir = (1.0 + strat_history[-1].ror) ** (
+                        365.0 / n_days
+                    ) - 1.0
+                    base_avg_ir = (1.0 + base_history[-1].ror) ** (
+                        365.0 / n_days
+                    ) - 1.0
+
+                    print(f"[{ticker}] {chart[0].date} ~ {chart[-1].date}")
+                    print(
+                        f"\tTotal Invested Capital (inflation-adjusted): {strat_history[-1].invested:.2f}"
+                    )
+                    print(
+                        f"\tStrategy Final Value: {strat_history[-1].value:.2f}"
+                    )
+                    print(
+                        f"\tStrategy RoR: {strat_history[-1].ror * 100:.2f}% ({strat_avg_ir * 100:.2f}% annualized)"
+                    )
+                    n_bought = sum(1 for s in strat_history if s.bought)
+                    bought_pct = (n_bought / len(strat_history)) * 100.0 if strat_history else 0.0
+                    print(
+                        f"\tStrategy Bought Days: {n_bought}/{len(strat_history)} ({bought_pct:.2f}%)"
+                    )
+                    print(
+                        f"\tBaseline Final Value: {base_history[-1].value:.2f}"
+                    )
+                    print(
+                        f"\tBaseline RoR: {base_history[-1].ror * 100:.2f}% ({base_avg_ir * 100:.2f}% annualized)"
+                    )
+
+                    if GRAPH:
+                        plot_dca(
+                            ticker,
+                            start_date,
+                            end_date,
+                            strat_history,
+                            base_history,
                         )
 
-                config = copy.deepcopy(BEST_CONFIGS[ticker])
-                for k, v in config_fields.items():
-                    if v is not None:
-                        setattr(config, k, v)
+                else:
+                    config: str = get_arg("config", tpe=str, default="best")
 
-                history, _ = full(ticker, config, START, END, test_mode=TEST_MODE)
-                if GRAPH:
-                    plot_full(ticker, START, END, history)
+                    if config != "best":
+                        for field, value in asdict(Config()).items():
+                            default_val = getattr(BEST_CONFIGS[ticker], field)
+                            config_fields[field] = get_arg(
+                                field, tpe=type(value), default=default_val
+                            )
+
+                    config = copy.deepcopy(BEST_CONFIGS[ticker])
+                    for k, v in config_fields.items():
+                        if v is not None:
+                            setattr(config, k, v)
+
+                    history, _ = full(
+                        ticker, config, START, END, test_mode=TEST_MODE
+                    )
+                    if GRAPH:
+                        plot_full(ticker, START, END, history)
 
             elif mode.startswith("h"):
                 tickers = ""
