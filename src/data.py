@@ -99,29 +99,39 @@ def read_sahm() -> Dict[str, float]:
     return sahm
 
 
-def compute_rsi(chart: List[StockRow], term: int) -> Dict[str, float]:
+def compute_rsi(
+    chart: List[StockRow], term: int, range: int = 50
+) -> Dict[str, float]:
     rsis = {}
 
     def compute(ps: List[float]) -> float:
         if len(ps) <= term:
             return 50
 
-        diffs = [n - p for p, n in zip(ps[:-1], ps[1:])]
+        sub_ps = ps[-(range + 1) :]
+        diffs = [n - p for p, n in zip(sub_ps[:-1], sub_ps[1:])]
+        if len(diffs) < term:
+            return 50
 
-        tot_change = sum([d if d > 0 else -d for d in diffs])
-        upgoing = sum([d for d in diffs if d > 0])
+        up = sum(d for d in diffs[:term] if d > 0) / term
+        down = sum(-d for d in diffs[:term] if d < 0) / term
 
-        return 100 * upgoing / tot_change if tot_change > 0 else 50
+        for d in diffs[term:]:
+            up = (up * (term - 1) + (d if d > 0 else 0)) / term
+            down = (down * (term - 1) + (-d if d < 0 else 0)) / term
+
+        return 50 if (up + down == 0) else 100 * (up / (up + down))
 
     prices = []
     for date, _, cp in chart:
         prices += [cp]
-        if len(prices) > term + 1:
+        if len(prices) > max(range, term) + 1:
             prices.pop(0)
 
         rsis[date] = compute(prices)
 
     return rsis
+
 
 
 def compute_volatility(chart: List[StockRow], term: int) -> Dict[str, float]:
