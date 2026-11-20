@@ -74,12 +74,14 @@ std::vector<State> run_dca_backtest(
     double strat_shares = 0.0;
     double strat_invested = SEED;
     double strat_comm = 0.0;
+    double strat_spent = 0.0;
 
     // Baseline state
     double base_cash = SEED;
     double base_shares = 0.0;
     double base_invested = SEED;
     double base_comm = 0.0;
+    double base_spent = 0.0;
 
     double strat_buy_amount = SEED / std::max(1, config.buy_splits);
     int elapsed = 0;
@@ -95,6 +97,7 @@ std::vector<State> run_dca_backtest(
                 base_shares = qty;
                 base_cash = 0.0;
                 base_comm = comm;
+                base_spent = SEED;
             }
         }
 
@@ -106,8 +109,10 @@ std::vector<State> run_dca_backtest(
         }
 
         if (rsi_val < config.rsi_threshold && strat_cash > 0) {
-            double current_portfolio_val = strat_cash + strat_shares * c.price;
-            strat_buy_amount = current_portfolio_val / std::max(1, config.buy_splits);
+            if (SCALE_BY_PORTFOLIO) {
+                double current_portfolio_val = strat_cash + strat_shares * c.price;
+                strat_buy_amount = current_portfolio_val / std::max(1, config.buy_splits);
+            }
             double buy_cash = std::min(strat_buy_amount, strat_cash);
             if (buy_cash > 0) {
                 double comm = buy_cash * COMMISSION_RATE;
@@ -115,6 +120,7 @@ std::vector<State> run_dca_backtest(
                 strat_shares += qty;
                 strat_cash -= buy_cash;
                 strat_comm += comm;
+                strat_spent += buy_cash;
             }
         }
 
@@ -134,7 +140,7 @@ std::vector<State> run_dca_backtest(
         s.close_price = c.close_price;
         s.max_cycle = 0;
         s.seed = strat_cash;
-        s.invested_seed = strat_invested;
+        s.invested_seed = strat_spent;
         s.remaining_seed = strat_cash;
         s.stock_qty = strat_shares;
         s.commission = strat_comm;
@@ -143,8 +149,8 @@ std::vector<State> run_dca_backtest(
         s.balance = strat_cash;
         s.boxx_seed = 0.0;
         s.boxx_eval = 0.0;
-        s.avg_price = (strat_shares > 0) ? (strat_invested / strat_shares) : 0.0;
-        s.stock_eval = strat_cash + strat_shares * c.close_price;
+        s.avg_price = (strat_shares > 0) ? (strat_spent / strat_shares) : 0.0;
+        s.stock_eval = strat_shares * c.close_price;
         s.ror = strat_twr_daily;
         s.base_ror = base_twr_daily;
 
